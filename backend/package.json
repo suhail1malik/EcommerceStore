@@ -1,0 +1,31 @@
+{
+  "name": "ecommerce-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "mongoose": "^8.12.1",
+    "dotenv": "^16.6.1",
+    "cors": "^2.8.5",
+    "bcryptjs": "^3.0.2",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^2.0.2",
+    "cloudinary": "^2.7.0",
+    "razorpay": "^2.9.6",
+    "express-async-handler": "^1.2.0",
+    "express-formidable": "^1.2.0",
+    "cookie-parser": "^1.4.7"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  },
+  "keywords": [],
+  "author": "Suhail Malik",
+  "license": "ISC",
+  "description": "Backend for ecommerce store"
+}

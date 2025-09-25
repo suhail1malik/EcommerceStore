@@ -1,0 +1,40 @@
+{
+  "name": "e-commerce-store",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "backend": "nodemon backend/index.js",
+    "frontend": "npm run dev --prefix frontend",
+    "dev": "concurrently \"npm run frontend\" \"npm run backend\""
+  },
+  "keywords": [],
+  "author": "Suhail Malik",
+  "license": "ISC",
+  "description": "my ecommerce website",
+  "dependencies": {
+    "@reduxjs/toolkit": "^2.6.1",
+    "apexcharts": "^5.3.5",
+    "bcryptjs": "^3.0.2",
+    "cloudinary": "^2.7.0",
+    "concurrently": "^9.1.2",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^4.21.2",
+    "express-async-handler": "^1.2.0",
+    "express-formidable": "^1.2.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.12.1",
+    "multer": "^2.0.2",
+    "razorpay": "^2.9.6",
+    "react-apexcharts": "^1.7.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "Ecommerce Website"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}

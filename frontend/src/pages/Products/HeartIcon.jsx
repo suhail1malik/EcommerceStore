@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import { useEffect } from "react";
 import { FaHeart, FaRegHeart, FaVaadin } from "react-icons/fa";
 import { useSelector, useDispatch } from "react-redux";
@@ -12,7 +12,7 @@ import {
   addFavoriteToLocalStorage,
   getFavoritesFromLocalStorage,
   removeFavoriteFromLocalStorage,
-} from '../../Utils/localstorage';
+} from "../../utils/localstorage";
 
 const HeartIcon = ({ product }) => {
   const dispatch = useDispatch();
@@ -37,11 +37,14 @@ const HeartIcon = ({ product }) => {
   };
 
   return (
-    <div onClick={toggleFavorites} className='absolute top-2 right-5 cursor-pointer'>
+    <div
+      onClick={toggleFavorites}
+      className="absolute top-2 right-5 cursor-pointer"
+    >
       {isFavorite ? (
-        <FaHeart className='text-pink-500' />
+        <FaHeart className="text-pink-500" />
       ) : (
-        <FaRegHeart className='text-white' />
+        <FaRegHeart className="text-white" />
       )}
     </div>
   );

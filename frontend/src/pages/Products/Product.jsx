@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import HeartIcon from "./HeartIcon";
 import "../../components/ProductCard.css";
-import { getImageSource } from "../../Utils/images";
+import { getImageSource } from "../../utils/images";
 import { formatCurrencyINR } from "../../utils/format";
 
 const Product = ({ product }) => {

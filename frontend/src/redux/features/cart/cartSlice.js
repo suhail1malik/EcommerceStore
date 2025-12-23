@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { calculateCartTotals, persistCart } from "../../../Utils/cartUtils";
+import { calculateCartTotals, persistCart } from "../../../utils/cartUtils";
 
 const cartFromStorage = (() => {
   try {

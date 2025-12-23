@@ -22,9 +22,24 @@ connectDB();
 const app = express();
 
 // ✅ Enable CORS before routes
+const allowedOrigins = [
+  "http://localhost:5173", // local development
+  process.env.FRONTEND_URL, // Netlify frontend URL from environment
+].filter(Boolean); // Remove undefined values
+
 app.use(
   cors({
-    origin: "http://localhost:5173", // your frontend URL
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+
+      // Check if origin is in allowed list or is a Netlify domain
+      if (allowedOrigins.includes(origin) || origin.includes(".netlify.app")) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true, // if using cookies/auth headers
   })
 );
@@ -63,4 +78,7 @@ app.use((err, req, res, next) => {
 const __dirname = path.resolve();
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 // Start server
-app.listen(port, () => console.log(`Server running on port ${port}`));
+app.listen(port, "0.0.0.0", () => {
+  console.log(`Server running on port ${port}`);
+  console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
+});

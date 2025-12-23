@@ -1,11 +1,11 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query";
-import { apiSlice } from './api/apiSlice.js';
-import authReducer from './features/auth/authSlice.js';
-import favoritesReducer from './features/favorites/favoriteSlice.js';
-import cartSliceReducer from './features/cart/cartSlice.js';
-import  shopReducer  from './features/shop/shopSlice.js';
-import { getFavoritesFromLocalStorage } from "../Utils/localstorage.js";
+import { apiSlice } from "./api/apiSlice.js";
+import authReducer from "./features/auth/authSlice.js";
+import favoritesReducer from "./features/favorites/favoriteSlice.js";
+import cartSliceReducer from "./features/cart/cartSlice.js";
+import shopReducer from "./features/shop/shopSlice.js";
+import { getFavoritesFromLocalStorage } from "../utils/localstorage.js";
 
 const initialFavorites = getFavoritesFromLocalStorage() || [];
 
@@ -31,9 +31,9 @@ const store = configureStore({
 setupListeners(store.dispatch);
 export default store;
 
-// the useState  hook is used to manage state in  functional components it give us current state varibal end a function to update it 
+// the useState  hook is used to manage state in  functional components it give us current state varibal end a function to update it
 
-// state in react js is for managing dynamic data within a component like user input and changing ui elements keep everything  interactive and rendering efficiently when data change 
+// state in react js is for managing dynamic data within a component like user input and changing ui elements keep everything  interactive and rendering efficiently when data change
 
 // the useEffect hook is used to perform side effects in functional components like fetching data or subscribing to events it runs after the component renders and can be used to update state or perform cleanup tasks
 

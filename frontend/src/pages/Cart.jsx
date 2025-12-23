@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { FaTrash } from "react-icons/fa";
 import { addToCart, removeFromCart } from "../redux/features/cart/cartSlice";
-import getImageSource from "../Utils/images";
+import getImageSource from "../utils/images";
 
 // Cart component start from here
 const Cart = () => {

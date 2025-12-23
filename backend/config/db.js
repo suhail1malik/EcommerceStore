@@ -20,7 +20,7 @@ export default connectDB;
 // const mongoose = require('mongoose');
 
 // // Connect to MongoDB
-// mongoose.connect('mongodb://127.0.0.1:27017/test', { useNewUrlParser: true, useUnifiedTopology: true });
+// mongoose.connect('mongodb://127.0.0.1:27017/testssds', { useNewUrlParser: true, useUnifiedTopology: true });
 
 // // Define a schema
 // const kittySchema = new mongoose.Schema({

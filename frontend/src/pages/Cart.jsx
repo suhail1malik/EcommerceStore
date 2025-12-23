@@ -11,7 +11,7 @@ const Cart = () => {
   const dispatch = useDispatch(); // dispatch is used to dispatch an action to mutate state in redux
 
   const { cartItems } = useSelector((state) => state.cart);
-
+  
   const addToCartHandler = (product, qty) => {
     dispatch(addToCart({ ...product, qty }));
   };
@@ -81,10 +81,10 @@ const Cart = () => {
                     <p className="text-lg font-semibold text-pink-600 dark:text-pink-400 mt-2">
                       ₹{item.price}
                     </p>
-                  </div>
+                    </div>
 
                   {/* QUANTITY CONTROLS */}
-                  <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3">
                     <button
                       onClick={() =>
                         addToCartHandler(item, Math.max(0, item.qty - 1))
@@ -139,7 +139,7 @@ const Cart = () => {
                 <div className="flex justify-between">
                   <span>Tax</span>
                   <span>₹{taxPrice.toFixed(2)}</span>
-                </div>
+              </div>
                 <hr className="border-slate-200 dark:border-slate-600" />
                 <div className="flex justify-between text-lg font-semibold">
                   <span>Total</span>

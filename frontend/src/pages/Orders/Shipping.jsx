@@ -3,10 +3,7 @@ import React, { useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
-import {
-  saveShippingAddress,
-  savePaymentMethod,
-} from "../../redux/features/cart/cartSlice";
+import { saveShippingAddress } from "../../redux/features/cart/cartSlice";
 import ProgressSteps from "../../components/ProgressSteps";
 
 const Shipping = () => {
@@ -16,9 +13,7 @@ const Shipping = () => {
   const cart = useSelector((state) => state.cart || {});
   const { shippingAddress = {} } = cart;
 
-  const [paymentMethod, setPaymentMethod] = useState(
-    shippingAddress.paymentMethod || "Razorpay"
-  );
+
   const [address, setAddress] = useState(shippingAddress.address || "");
   const [city, setCity] = useState(shippingAddress.city || "");
   const [postalCode, setPostalCode] = useState(
@@ -38,10 +33,9 @@ const Shipping = () => {
       }
 
       dispatch(saveShippingAddress({ address, city, postalCode, country }));
-      dispatch(savePaymentMethod(paymentMethod));
-      navigate("/placeorder");
+      navigate("/payment");
     },
-    [address, city, postalCode, country, paymentMethod, dispatch, navigate]
+    [address, city, postalCode, country, dispatch, navigate]
   );
 
   return (
@@ -68,7 +62,7 @@ const Shipping = () => {
               id="address"
               name="address"
               type="text"
-              className="w-full p-2 border rounded bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 border-slate-300 dark:border-slate-600"
+              className="w-full p-2 border rounded bg-slate-50 dark:bg-slate-700 text-gray-900 dark:text-slate-100 border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500"
               placeholder="Enter address"
               value={address}
               required
@@ -89,7 +83,7 @@ const Shipping = () => {
                 id="city"
                 name="city"
                 type="text"
-                className="w-full p-2 border rounded bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 border-slate-300 dark:border-slate-600"
+                className="w-full p-2 border rounded bg-slate-50 dark:bg-slate-700 text-gray-900 dark:text-slate-100 border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 placeholder="Enter city"
                 value={city}
                 required
@@ -109,7 +103,7 @@ const Shipping = () => {
                 id="postalCode"
                 name="postalCode"
                 type="text"
-                className="w-full p-2 border rounded bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 border-slate-300 dark:border-slate-600"
+                className="w-full p-2 border rounded bg-slate-50 dark:bg-slate-700 text-gray-900 dark:text-slate-100 border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 placeholder="Enter postal code"
                 value={postalCode}
                 required
@@ -130,7 +124,7 @@ const Shipping = () => {
               id="country"
               name="country"
               type="text"
-              className="w-full p-2 border rounded bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 border-slate-300 dark:border-slate-600"
+              className="w-full p-2 border rounded bg-slate-50 dark:bg-slate-700 text-gray-900 dark:text-slate-100 border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500"
               placeholder="Enter country"
               value={country}
               required
@@ -139,37 +133,10 @@ const Shipping = () => {
             />
           </div>
 
-          <fieldset className="mb-6">
-            <legend className="text-gray-700 dark:text-slate-200 mb-2">
-              Select Payment Method
-            </legend>
-
-            <div className="flex items-center space-x-3">
-              <label className="inline-flex items-center text-gray-800 dark:text-slate-100">
-                <input
-                  type="radio"
-                  name="paymentMethod"
-                  value="Razorpay"
-                  checked={paymentMethod === "Razorpay"}
-                  onChange={(e) => setPaymentMethod(e.target.value)}
-                  className="form-radio"
-                  aria-checked={paymentMethod === "Razorpay"}
-                />
-                <span className="ml-2">Razorpay (UPI, Cards, Net Banking)</span>
-              </label>
-
-              {/* Example: add another method if you need later */}
-              {/* <label className="inline-flex items-center text-gray-800 dark:text-slate-100">
-                <input type="radio" name="paymentMethod" value="COD" checked={paymentMethod === "COD"} onChange={(e)=> setPaymentMethod(e.target.value)} className="form-radio" />
-                <span className="ml-2">Cash on Delivery</span>
-              </label> */}
-            </div>
-          </fieldset>
-
           <button
             type="submit"
-            className="w-full bg-pink-500 hover:bg-pink-600 text-white py-2 px-4 rounded-full text-lg"
-            aria-label="Continue to place order"
+            className="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-2 px-4 rounded-full text-lg mt-4"
+            aria-label="Continue to payment"
           >
             Continue
           </button>

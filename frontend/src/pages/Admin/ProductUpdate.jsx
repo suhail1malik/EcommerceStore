@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import AdminMenu from "./AdminMenu";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   useUpdateProductMutation,
@@ -9,6 +8,7 @@ import {
 } from "../../redux/api/productApiSlice";
 import { useFetchCategoriesQuery } from "../../redux/api/categoryApiSlice";
 import { toast } from "react-toastify";
+import ImageCropper from "../../components/ImageCropper";
 
 const BASE_URL = import.meta.env.VITE_BACKEND_URL; // make sure this is set in Vercel / .env
 
@@ -25,7 +25,7 @@ const AdminProductUpdate = () => {
 
   // keep imageUrl (string) and optionally file (File) if you also want to upload directly
   const [image, setImage] = useState("");
-  // const [imageFile, setImageFile] = useState(null); // optional if you want local preview before upload
+  const [galleryUrls, setGalleryUrls] = useState([]);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
@@ -33,6 +33,9 @@ const AdminProductUpdate = () => {
   const [quantity, setQuantity] = useState("");
   const [brand, setBrand] = useState("");
   const [stock, setStock] = useState("");
+
+  const [cropSrc, setCropSrc] = useState(null);
+  const [isCropping, setIsCropping] = useState(false);
 
   // helper: convert product image (could be relative path or full cloudinary url)
   const normalizeImageUrl = (img) => {
@@ -44,6 +47,7 @@ const AdminProductUpdate = () => {
   useEffect(() => {
     if (productData && categories.length >= 0) {
       setImage(normalizeImageUrl(productData.image));
+      setGalleryUrls(productData.images || []);
       setName(productData.name || "");
       setDescription(productData.description || "");
       setPrice(productData.price ?? "");
@@ -84,35 +88,54 @@ const AdminProductUpdate = () => {
     return true;
   };
 
-  // upload file -> backend upload endpoint which returns the cloudinary URL
-  const uploadFileHandler = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  const handleFileSelect = (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      const url = URL.createObjectURL(file);
+      setCropSrc(url);
+      setIsCropping(true);
+      e.target.value = ""; // clear so we can pick exact same file again
+    }
+  };
 
-    // Keep local preview if you want
-    // setImageFile(file); // optional, used only for preview
-    const fd = new FormData();
-    fd.append("image", file);
+  const handleCropCancel = () => {
+    setIsCropping(false);
+    setCropSrc(null);
+  };
 
+  const handleCropDone = async (croppedFile) => {
     try {
-      const res = await uploadProductImage(fd).unwrap();
-
-      if (res.image) {
-        setImage(res.image); // always Cloudinary URL string
-        toast.success("Image uploaded successfully");
-      }
-
-      // backend returns imageUrl in your case — read robustly
+      setIsCropping(false);
+      const formData = new FormData();
+      formData.append("image", croppedFile);
+      
+      const res = await uploadProductImage(formData).unwrap();
+      const uploadedUrl = res.image;
+      toast.success("Image cropped and uploaded successfully!");
 
       if (!image) {
-        console.error("Upload response did not contain a URL:", res);
-        toast.error("Upload succeeded but server did not return URL");
-        return;
+        setImage(uploadedUrl);
+      } else {
+        setGalleryUrls((prev) => [...prev, uploadedUrl]);
       }
     } catch (err) {
-      console.error("uploadFileHandler error:", err);
-      toast.error("Image upload failed");
+      toast.error(err?.data?.message || err.error || "Upload failed");
+    } finally {
+      setCropSrc(null);
     }
+  };
+
+  const handleRemoveCover = () => {
+    if (galleryUrls.length > 0) {
+      setImage(galleryUrls[0]);
+      setGalleryUrls((prev) => prev.slice(1));
+    } else {
+      setImage("");
+    }
+  };
+
+  const handleRemoveGallery = (idx) => {
+    setGalleryUrls((prev) => prev.filter((_, i) => i !== idx));
   };
 
   const handleSubmit = async (e) => {
@@ -140,6 +163,9 @@ const AdminProductUpdate = () => {
       formData.append("quantity", quantity);
       formData.append("brand", brand);
       formData.append("countInStock", stock);
+      if (galleryUrls.length > 0) {
+        formData.append("images", JSON.stringify(galleryUrls));
+      }
 
       // DEBUG: ensure image appears as text in formData
       for (let pair of formData.entries()) {
@@ -171,39 +197,75 @@ const AdminProductUpdate = () => {
     }
   };
 
-  if (isLoading) return <div className="text-center mt-5">Loading...</div>;
+  if (isLoading) return <div className="text-center mt-5 p-8 text-gray-500">Loading...</div>;
 
   return (
-    <div className="w-full max-w-screen-xl mx-auto px-4">
-      <div className="flex flex-col md:flex-row gap-4">
-        <div className="w-full md:w-1/4">
-          <AdminMenu />
-        </div>
+    <div className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 shadow-sm rounded-xl">
+      {isCropping && cropSrc && (
+        <ImageCropper 
+          imageSrc={cropSrc} 
+          onCropDone={handleCropDone} 
+          onCropCancel={handleCropCancel} 
+        />
+      )}
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Update Product</h1>
+        <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">Modify or delete this product</p>
+      </div>
 
-        <div className="md:w-3/4 p-3">
-          <h2 className="text-xl font-semibold mb-4">
-            Update / Delete Product
-          </h2>
+        {/* Image Previews */}
+        {(image || galleryUrls.length > 0) && (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            {image && (
+              <div className="relative aspect-[4/5] rounded-xl overflow-hidden border-2 border-emerald-500 shadow-xl group">
+                <span className="absolute top-2 left-2 bg-emerald-500 text-white text-xs font-bold px-2 py-1 rounded shadow-md z-10 w-fit">Cover Photo</span>
+                <button 
+                  type="button"
+                  onClick={handleRemoveCover}
+                  className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity z-20 shadow-md hover:bg-red-600 focus:outline-none"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </button>
+                <img
+                  src={image.startsWith("http") ? image : `${import.meta.env.VITE_BACKEND_URL || ""}${image}`}
+                  alt="main"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
+            {galleryUrls.map((url, index) => (
+              <div key={index} className="relative aspect-[4/5] rounded-xl overflow-hidden border-2 border-slate-200 dark:border-slate-700 shadow-sm opacity-90 group hover:opacity-100 transition-opacity">
+                <button 
+                  type="button"
+                  onClick={() => handleRemoveGallery(index)}
+                  className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity z-20 shadow-md hover:bg-red-600 focus:outline-none"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </button>
+                <img
+                  src={url.startsWith("http") ? url : `${import.meta.env.VITE_BACKEND_URL || ""}${url}`}
+                  alt={`gallery-${index}`}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            ))}
+          </div>
+        )}
 
-          {image && (
-            <div className="text-center mb-4">
-              <img
-                src={image}
-                alt="product"
-                className="block mx-auto w-full max-w-[300px] h-auto rounded-md shadow"
-              />
-            </div>
-          )}
-
-          <div className="mb-3">
-            <label className="text-white py-2 block font-bold">
-              Upload Image
+          <div className="mb-6">
+            <label className="border-2 border-dashed border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-300 px-4 block w-full text-center rounded-xl cursor-pointer font-semibold py-12 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 hover:border-emerald-300 transition-colors">
+              <span className="text-emerald-500 block mb-2 text-2xl">📸</span>
+              Click to Upload Another Gallery Image
               <input
                 type="file"
-                name="image"
+                name="images"
                 accept="image/*"
-                onChange={uploadFileHandler}
-                className="block mt-2"
+                onChange={handleFileSelect}
+                className="hidden"
               />
             </label>
           </div>
@@ -214,7 +276,7 @@ const AdminProductUpdate = () => {
                 <label htmlFor="name">Name</label>
                 <input
                   type="text"
-                  className="p-3 w-full border rounded-lg bg-[#101011] text-white"
+                  className="p-3 w-full border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                 />
@@ -224,7 +286,7 @@ const AdminProductUpdate = () => {
                 <label htmlFor="price">Price</label>
                 <input
                   type="number"
-                  className="p-3 w-full border rounded-lg bg-[#101011] text-white"
+                  className="p-3 w-full border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors"
                   value={price}
                   onChange={(e) => setPrice(e.target.value)}
                 />
@@ -234,7 +296,7 @@ const AdminProductUpdate = () => {
                 <label htmlFor="quantity">Quantity</label>
                 <input
                   type="number"
-                  className="p-3 w-full border rounded-lg bg-[#101011] text-white"
+                  className="p-3 w-full border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors"
                   value={quantity}
                   onChange={(e) => setQuantity(e.target.value)}
                 />
@@ -244,7 +306,7 @@ const AdminProductUpdate = () => {
                 <label htmlFor="brand">Brand</label>
                 <input
                   type="text"
-                  className="p-3 w-full border rounded-lg bg-[#101011] text-white"
+                  className="p-3 w-full border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors"
                   value={brand}
                   onChange={(e) => setBrand(e.target.value)}
                 />
@@ -254,7 +316,7 @@ const AdminProductUpdate = () => {
                 <label htmlFor="description">Description</label>
                 <textarea
                   rows="3"
-                  className="p-3 w-full border rounded-lg bg-[#101011] text-white"
+                  className="p-3 w-full border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                 />
@@ -264,7 +326,7 @@ const AdminProductUpdate = () => {
                 <label htmlFor="stock">Count In Stock</label>
                 <input
                   type="number"
-                  className="p-3 w-full border rounded-lg bg-[#101011] text-white"
+                  className="p-3 w-full border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors"
                   value={stock}
                   onChange={(e) => setStock(e.target.value)}
                 />
@@ -275,7 +337,7 @@ const AdminProductUpdate = () => {
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="p-4 mb-3 w-full border rounded-lg bg-[#101011] text-white"
+                  className="p-3 w-full border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors"
                 >
                   {categories?.map((c) => (
                     <option key={c._id} value={c._id}>
@@ -286,24 +348,22 @@ const AdminProductUpdate = () => {
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 mt-6">
+            <div className="flex flex-col sm:flex-row gap-4 mt-8">
               <button
                 type="submit"
-                className="py-3 px-6 rounded-lg bg-green-600 text-white font-semibold"
+                className="flex-1 py-3 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition-colors"
               >
-                Update
+                Update Product
               </button>
               <button
                 type="button"
                 onClick={handleDelete}
-                className="py-3 px-6 rounded-lg bg-pink-600 text-white font-semibold"
+                className="flex-1 py-3 px-6 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold transition-colors"
               >
-                Delete
+                Delete Product
               </button>
             </div>
           </form>
-        </div>
-      </div>
     </div>
   );
 };

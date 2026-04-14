@@ -10,7 +10,11 @@ import {
   calcualteTotalSalesByDate,
   findOrderById,
   markOrderAsPaid,
+  markOrderAsPacked,
+  markOrderAsShipped,
+  markOrderAsOutForDelivery,
   markOrderAsDelivered,
+  cancelOrder,
 } from "../controllers/orderController.js";
 
 import { authenticate, authorizeAdmin } from "../middlewares/authMiddleware.js";
@@ -26,8 +30,11 @@ router.route("/total-sales").get(calculateTotalSales);
 router.route("/total-sales-by-date").get(calcualteTotalSalesByDate);
 router.route("/:id").get(authenticate, findOrderById);
 router.route("/:id/pay").put(authenticate, markOrderAsPaid);
-router
-  .route("/:id/deliver")
-  .put(authenticate, authorizeAdmin, markOrderAsDelivered);
+
+router.route("/:id/packed").put(authenticate, authorizeAdmin, markOrderAsPacked);
+router.route("/:id/shipped").put(authenticate, authorizeAdmin, markOrderAsShipped);
+router.route("/:id/out-for-delivery").put(authenticate, authorizeAdmin, markOrderAsOutForDelivery);
+router.route("/:id/deliver").put(authenticate, authorizeAdmin, markOrderAsDelivered);
+router.route("/:id/cancel").put(authenticate, cancelOrder);
 
 export default router;

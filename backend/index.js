@@ -4,6 +4,10 @@ import express from "express";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import helmet from "helmet";
+import mongoSanitize from "express-mongo-sanitize";
+import compression from "compression";
+import rateLimit from "express-rate-limit";
 
 // Utiles
 import connectDB from "./config/db.js";
@@ -15,16 +19,47 @@ import orderRoutes from "./routes/orderRoutes.js";
 import razorpayRoutes from "./routes/razorpayRoutes.js";
 
 dotenv.config();
+
+// FATAL Start-up Safety Checks
+if (!process.env.MONGO_URI) {
+  console.error("FATAL ERROR: MONGO_URI is missing in .env");
+  process.exit(1);
+}
+if (!process.env.JWT_SECRET) {
+  console.error("FATAL ERROR: JWT_SECRET is missing in .env");
+  process.exit(1);
+}
+
 const port = process.env.PORT || 5100;
 
 // Connect to database
-connectDB();
+const startServer = async () => {
+  await connectDB(); // wait here
+  app.listen(port, () => {
+    console.log("Server started");
+  });
+};
+
+startServer();
 const app = express();
+
+// Security Middlewares
+app.use(helmet());
+app.use(mongoSanitize());
+app.use(compression());
+
+// Rate Limiting API endpoints
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: "Too many requests from this IP, please try again after 15 minutes"
+});
+app.use("/api", apiLimiter);
 
 // ✅ Enable CORS before routes
 const allowedOrigins = [
   "http://localhost:5173", // local development
-  process.env.FRONTEND_URL, // Netlify frontend URL from environment
+  process.env.FRONTEND_URL, // Deployed frontend URL from environment
 ].filter(Boolean); // Remove undefined values
 
 app.use(
@@ -33,8 +68,8 @@ app.use(
       // Allow requests with no origin (like mobile apps or curl requests)
       if (!origin) return callback(null, true);
 
-      // Check if origin is in allowed list or is a Netlify domain
-      if (allowedOrigins.includes(origin) || origin.includes(".netlify.app")) {
+      // Check if origin exactly matches our allowed list securely
+      if (allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
         callback(new Error("Not allowed by CORS"));
@@ -69,10 +104,27 @@ app.get("/api/config/razorpay", (req, res) => {
   });
 });
 
-// Error handler
+// Global Error handler
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).send("Something broke!");
+  let message = err.message || "Internal Server Error";
+  let statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+
+  if (err.name === "CastError" && err.kind === "ObjectId") {
+    statusCode = 404;
+    message = "Resource not found (Invalid ID)";
+  }
+
+  if (err.name === "ValidationError") {
+    statusCode = 400;
+    message = Object.values(err.errors)
+      .map((val) => val.message)
+      .join(", ");
+  }
+
+  res.status(err.statusCode || statusCode).json({
+    message: message,
+    stack: process.env.NODE_ENV === "production" ? null : err.stack,
+  });
 });
 
 const __dirname = path.resolve();

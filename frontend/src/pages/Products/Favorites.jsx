@@ -3,10 +3,12 @@ import { useSelector } from "react-redux";
 import { selectFavoriteProduct } from "../../redux/features/favorites/favoriteSlice";
 import ProductCard from "./ProductCard";
 import { Link } from "react-router-dom";
+import { useGetTopProductsQuery } from "../../redux/api/productApiSlice";
 
 const Favorites = () => {
   const favorites = useSelector(selectFavoriteProduct) || [];
   const favList = useMemo(() => favorites.filter(Boolean), [favorites]);
+  const { data: topProducts } = useGetTopProductsQuery();
 
   return (
     <section className="w-full px-4 sm:px-6 lg:px-12 py-8">
@@ -36,7 +38,7 @@ const Favorites = () => {
             <p className="text-lg text-slate-300 mb-4">No favorites yet.</p>
             <Link
               to="/shop"
-              className="inline-block px-5 py-2 rounded-md bg-pink-600 text-white"
+              className="inline-block px-5 py-2 rounded-md bg-emerald-600 text-white"
             >
               Browse products
             </Link>
@@ -51,6 +53,20 @@ const Favorites = () => {
                 <ProductCard product={product} />
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Suggested Products */}
+        {topProducts && topProducts.length > 0 && (
+          <div className="mt-16 pt-8 border-t border-slate-200 dark:border-slate-800">
+            <h2 className="text-xl font-semibold mb-6">Suggested for you</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-6">
+               {topProducts.slice(0, 4).map(p => (
+                  <div key={p._id}>
+                    <ProductCard product={p} />
+                  </div>
+               ))}
+            </div>
           </div>
         )}
       </div>

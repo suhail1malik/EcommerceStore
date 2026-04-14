@@ -46,7 +46,7 @@ const HeroCarousel = () => {
     return (
       <div className="h-48 sm:h-64 md:h-72 lg:h-80 flex items-center justify-center bg-gray-100 dark:bg-gray-800">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-500 mx-auto mb-2"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500 mx-auto mb-2"></div>
           <p className="text-gray-600 dark:text-gray-300">
             Loading products...
           </p>
@@ -108,11 +108,11 @@ const HeroCarousel = () => {
           {products.map((p) => (
             <div key={p._id}>
               <Link to={`/product/${p._id}`} className="block">
-                <div className="w-full h-48 sm:h-64 md:h-72 lg:h-80 overflow-hidden">
+                <div className="w-full h-64 sm:h-80 md:h-[400px] lg:h-[500px] overflow-hidden bg-white relative flex items-center justify-center p-4">
                   <img
-                    src={`${BASE_URL}${p.image}`}
+                    src={p.image}
                     alt={p.name}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain"
                     loading="lazy"
                     onError={(e) => {
                       e.target.src =

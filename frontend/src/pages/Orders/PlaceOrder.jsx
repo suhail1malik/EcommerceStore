@@ -7,9 +7,10 @@ import { useDispatch, useSelector } from "react-redux";
 import Message from "../../components/Message";
 import ProgressSteps from "../../components/ProgressSteps";
 import Loader from "../../components/Loader";
+import RazorpayPayment from "../../components/RazorpayPayment";
 
 import { useCreateOrderMutation } from "../../redux/api/orderApiSlice";
-import { clearCartItems } from "../../redux/features/cart/cartSlice";
+import { clearCartItems, removeFromCart } from "../../redux/features/cart/cartSlice";
 import { BASE_URL } from "../../redux/constants";
 
 // helper: safe currency formatter for INR
@@ -47,14 +48,14 @@ const PlaceOrder = () => {
     }
   }, [shippingAddress?.address, navigate]);
 
-  const placeOrderHandler = async () => {
+  const placeOrderHandler = async (paymentResult = null) => {
     if (cartItems.length === 0) {
       toast.error("Your cart is empty.");
       return;
     }
 
     try {
-      const res = await createOrder({
+      const orderPayload = {
         orderItems: cartItems,
         shippingAddress,
         paymentMethod,
@@ -62,20 +63,45 @@ const PlaceOrder = () => {
         shippingPrice: cart.shippingPrice,
         taxPrice: cart.taxPrice,
         totalPrice: cart.totalPrice,
-      }).unwrap();
+      };
+
+      if (paymentResult) {
+        orderPayload.isPaid = true;
+        orderPayload.paidAt = new Date().toISOString();
+        orderPayload.paymentResult = {
+          id: paymentResult.razorpay_payment_id,
+          status: "completed",
+          update_time: new Date().toISOString(),
+          razorpay_order_id: paymentResult.razorpay_order_id,
+          razorpay_signature: paymentResult.razorpay_signature,
+        };
+      }
+
+      const res = await createOrder(orderPayload).unwrap();
 
       // clear cart and navigate to order page
       dispatch(clearCartItems());
       navigate(`/order/${res._id}`);
     } catch (err) {
       const msg = err?.data?.message || err?.message || "Failed to place order";
+      
+      // Auto-sync Cart: If a product was deleted by admin but still in user's cart
+      if (msg.startsWith("Product not found:")) {
+        const missingId = msg.split("Product not found:")[1]?.trim();
+        if (missingId) {
+          dispatch(removeFromCart(missingId));
+          toast.error("An item in your cart is no longer available and has been automatically removed. Please review your cart.");
+          return;
+        }
+      }
+
       toast.error(msg);
     }
   };
 
   return (
     <>
-      <ProgressSteps step1 step2 step3 />
+      <ProgressSteps step1 step2 step3 step4 />
       <div className="container mx-auto mt-8 px-4">
         {cartItems.length === 0 ? (
           <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md p-6 mb-8">
@@ -83,7 +109,7 @@ const PlaceOrder = () => {
             <div className="mt-4">
               <Link
                 to="/shop"
-                className="text-indigo-600 dark:text-indigo-300 hover:underline"
+                className="text-emerald-600 dark:text-emerald-400 hover:underline"
               >
                 Go to Shop
               </Link>
@@ -117,7 +143,7 @@ const PlaceOrder = () => {
                       <div className="flex-grow">
                         <Link
                           to={`/product/${item.product}`}
-                          className="text-lg font-medium text-indigo-600 hover:text-indigo-800 transition-colors"
+                          className="text-lg font-medium text-emerald-600 dark:text-emerald-500 hover:text-emerald-800 dark:hover:text-emerald-400 transition-colors"
                         >
                           {item.name}
                         </Link>
@@ -191,7 +217,7 @@ const PlaceOrder = () => {
                         <span className="text-lg font-semibold text-gray-800 dark:text-slate-100">
                           Total:
                         </span>
-                        <span className="text-lg font-bold text-indigo-600 dark:text-indigo-400">
+                        <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
                           {formatINR(cart.totalPrice)}
                         </span>
                       </div>
@@ -206,21 +232,35 @@ const PlaceOrder = () => {
                     </Message>
                   )}
 
-                  <button
-                    type="button"
-                    className="w-full bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-300 flex items-center justify-center"
-                    disabled={cartItems.length === 0 || isLoading}
-                    onClick={placeOrderHandler}
-                  >
-                    {isLoading ? (
-                      <>
-                        <Loader />
-                        <span className="ml-2">Processing...</span>
-                      </>
-                    ) : (
-                      "Place Order"
-                    )}
-                  </button>
+                  {paymentMethod === "Razorpay" ? (
+                    <RazorpayPayment
+                      amount={cart.totalPrice}
+                      orderId="new_order"
+                      onSuccess={async (paymentResult) => {
+                        await placeOrderHandler(paymentResult);
+                      }}
+                      onFailure={(err) => {
+                        toast.error(err || "Payment failed.");
+                      }}
+                      disabled={cartItems.length === 0 || isLoading}
+                    />
+                  ) : (
+                    <button
+                      type="button"
+                      className="w-full bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-300 flex items-center justify-center"
+                      disabled={cartItems.length === 0 || isLoading}
+                      onClick={() => placeOrderHandler(null)}
+                    >
+                      {isLoading ? (
+                        <>
+                          <Loader />
+                          <span className="ml-2">Processing...</span>
+                        </>
+                      ) : (
+                        "Place Order"
+                      )}
+                    </button>
+                  )}
                 </div>
               </div>
 

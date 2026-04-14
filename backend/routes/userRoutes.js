@@ -9,6 +9,8 @@ import {
   deleteUserById,
   getUserById,
   updateUserById,
+  forgotPassword,
+  resetPassword,
 } from "../controllers/userController.js";
 
 import { authenticate, authorizeAdmin } from "../middlewares/authMiddleware.js";
@@ -23,6 +25,10 @@ router
 router.post("/auth", loginUser);
 router.post("/logout", logoutCurrentUser);
 router.post("/register", createUser);
+
+// Password recovery routes
+router.post("/forgotpassword", forgotPassword);
+router.put("/resetpassword/:token", resetPassword);
 
 router
   .route("/profile")

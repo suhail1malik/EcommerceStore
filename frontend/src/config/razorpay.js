@@ -6,7 +6,7 @@ export const RAZORPAY_CONFIG = {
 
   // Styling
   theme: {
-    color: "#F37254",
+    color: "#10b981",
   },
 
   // Company details

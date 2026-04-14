@@ -77,7 +77,7 @@ const Register = () => {
               value={username}
               onChange={(e) => setName(e.target.value)}
               placeholder="Your full name"
-              className="mt-1 w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-3 text-slate-100 focus:outline-none focus:ring-2 focus:ring-pink-500"
+              className="mt-1 w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-3 text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
 
@@ -95,7 +95,7 @@ const Register = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="mt-1 w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-3 text-slate-100 focus:outline-none focus:ring-2 focus:ring-pink-500"
+              className="mt-1 w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-3 text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
 
@@ -114,7 +114,7 @@ const Register = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="At least 6 characters"
-                className="mt-1 w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-3 text-slate-100 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                className="mt-1 w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-3 text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>
             <div>
@@ -131,7 +131,7 @@ const Register = () => {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Repeat password"
-                className="mt-1 w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-3 text-slate-100 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                className="mt-1 w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-3 text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>
           </div>
@@ -143,7 +143,7 @@ const Register = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full rounded-md bg-pink-600 px-4 py-3 text-white font-medium hover:bg-pink-700 disabled:opacity-50"
+            className="w-full rounded-md bg-emerald-600 px-4 py-3 text-white font-medium hover:bg-emerald-700 disabled:opacity-50"
           >
             {isLoading ? "Registering..." : "Create account"}
           </button>
@@ -153,7 +153,7 @@ const Register = () => {
           Already have an account?{" "}
           <Link
             to={redirect ? `/login?redirect=${redirect}` : "/login"}
-            className="text-pink-500 hover:underline"
+            className="text-emerald-500 hover:underline"
           >
             Log in
           </Link>

@@ -16,7 +16,7 @@ const FavoritesCount = () => {
         favoriteCount === 1 ? "item" : "items"
       }`}
       aria-live="polite"
-      className="absolute -top-2 -right-2 min-w-4 h-4 px-1 text-[11px] leading-4 text-white bg-pink-500 rounded-full text-center"
+      className="absolute -top-2 -right-2 min-w-4 h-4 px-1 text-[11px] leading-4 text-white bg-emerald-500 rounded-full text-center"
     >
       {favoriteCount}
     </span>

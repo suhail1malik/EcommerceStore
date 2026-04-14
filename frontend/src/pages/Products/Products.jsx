@@ -18,7 +18,7 @@ import {
   FaStar,
   FaStore,
 } from "react-icons/fa";
-import moment from "moment";
+import { formatDistanceToNow } from "date-fns";
 import ProductTabs from "./ProductTabs";
 const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 import HeartIcon from "./HeartIcon";
@@ -86,7 +86,7 @@ const Product = () => {
           <div className="flex flex-wrap relative items-between mt-[2rem] ml-[10rem]">
             <div>
               <img
-                src={`${BASE_URL}${product.image}`}
+                src={product.image}
                 alt={product.name}
                 className="w-full  xl:w-[50rem] lg:w-[45rem] md:w-[30rem] sm:w-[20rem] mr-[2rem]"
               />
@@ -112,7 +112,7 @@ const Product = () => {
                   </h1>
                   <h1 className="flex items-center mb-6">
                     <FaClock className="mr-2 text-white" /> Added:{" "}
-                    {moment(product.createdAt).fromNow()}
+                    {formatDistanceToNow(new Date(product.createdAt), { addSuffix: true })}
                   </h1>
                   <h1 className="flex items-center mb-6">
                     <FaStar className="mr-2 text-white" /> Reviews:
@@ -162,7 +162,7 @@ const Product = () => {
                 <button
                   onClick={addToCartHandler}
                   disabled={product.countInStock === 0}
-                  className="bg-pink-600 text-white py-2 px-4 rounded-lg mt-4 md:mt-0"
+                  className="bg-emerald-600 text-white py-2 px-4 rounded-lg mt-4 md:mt-0"
                 >
                   Add To Cart
                 </button>

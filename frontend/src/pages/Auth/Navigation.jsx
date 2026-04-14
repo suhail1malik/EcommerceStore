@@ -7,6 +7,7 @@ import {
   AiOutlineLogin,
   AiOutlineUserAdd,
   AiOutlineClose,
+  AiOutlineSearch,
 } from "react-icons/ai";
 import { FaHeart } from "react-icons/fa";
 import { GiHamburgerMenu } from "react-icons/gi";
@@ -185,13 +186,14 @@ const Navigation = () => {
   };
 
   return (
-    <nav className="sticky top-0 z-50 bg-[#0b0b0b] dark:bg-slate-900/95 backdrop-blur border-b border-slate-800">
+    <>
+      <nav className="sticky top-0 z-[100] w-full bg-white/85 dark:bg-zinc-950/85 backdrop-blur-xl border-b border-slate-200 dark:border-white/10 shadow-[0_15px_40px_-10px_rgba(15,23,42,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.6)] transition-all duration-300">
       <div className="max-w-[1400px] mx-auto px-3 sm:px-4 lg:px-6 h-14 flex items-center gap-3">
         {/* Left: brand + badges */}
-        <div className="flex items-center gap-4 text-white shrink-0">
+        <div className="flex items-center gap-4 text-slate-800 dark:text-white shrink-0">
           <Link
             to="/"
-            className="font-semibold text-2xl tracking-tight text-white hover:text-pink-400"
+            className="font-semibold text-2xl tracking-tight text-slate-900 dark:text-white hover:text-emerald-500 dark:hover:text-emerald-400 transition"
           >
             E-Store
           </Link>
@@ -200,16 +202,16 @@ const Navigation = () => {
             title="Detect location"
             onClick={clearLocation}
             aria-label="Detect location"
-            className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-md bg-slate-800/50 text-slate-300 text-sm hover:bg-slate-700 hover:text-white transition"
+            className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-md bg-slate-200 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 text-sm hover:bg-slate-300 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white transition"
           >
-            <MdLocationOn className="text-pink-500 text-lg" />
+            <MdLocationOn className="text-emerald-600 dark:text-emerald-500 text-lg" />
             {locating ? "Detecting..." : locationLabel}
           </button>
 
           <div className="hidden md:flex items-center gap-5">
             <Link
               to="/"
-              className="flex items-center gap-2 hover:text-pink-400"
+              className={`flex items-center gap-2 transition-colors ${location.pathname === '/' ? 'text-emerald-500 font-semibold' : 'hover:text-emerald-400'}`}
               aria-label="Go to Home"
             >
               <AiOutlineHome className="text-xl" />
@@ -218,16 +220,27 @@ const Navigation = () => {
 
             <Link
               to="/shop"
-              className="flex items-center gap-2 hover:text-pink-400"
+              className={`flex items-center gap-2 transition-colors ${location.pathname === '/shop' ? 'text-emerald-500 font-semibold' : 'hover:text-emerald-400'}`}
               aria-label="Browse Shop"
             >
               <AiOutlineShopping className="text-xl" />
               <span className="hidden sm:inline font-medium">Shop</span>
             </Link>
 
+            {userInfo && !userInfo.isAdmin && (
+              <Link
+                to="/user-orders"
+                className={`flex items-center gap-2 transition-colors ${location.pathname === '/user-orders' ? 'text-emerald-500 font-semibold' : 'hover:text-emerald-400'}`}
+                aria-label="My Orders"
+              >
+                <AiOutlineShopping className="text-xl" />
+                <span className="hidden sm:inline font-medium">Orders</span>
+              </Link>
+            )}
+
             <Link
               to="/favorite"
-              className="flex items-center gap-2 hover:text-pink-400"
+              className={`flex items-center gap-2 transition-colors ${location.pathname === '/favorite' ? 'text-emerald-500 font-semibold' : 'hover:text-emerald-400'}`}
               aria-label="Favorites"
             >
               <span className="relative inline-block">
@@ -244,12 +257,12 @@ const Navigation = () => {
           {/* Cart */}
           <Link
             to="/cart"
-            className="relative text-white hover:text-pink-400"
+            className={`relative transition-colors ${location.pathname === '/cart' ? 'text-emerald-500' : 'text-slate-800 dark:text-white hover:text-emerald-600 dark:hover:text-emerald-400'}`}
             aria-label="View Cart"
           >
             <AiOutlineShoppingCart className="text-xl" />
             {cartItems.length > 0 && (
-              <span className="absolute -top-2 -right-2 bg-pink-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-[11px]">
+              <span className="absolute -top-2 -right-2 bg-emerald-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-[11px]">
                 {cartItems.reduce((a, c) => a + c.qty, 0)}
               </span>
             )}
@@ -262,7 +275,7 @@ const Navigation = () => {
             title={
               theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
             }
-            className="rounded-md p-2 text-slate-300 hover:text-white hover:bg-slate-700 transition"
+            className="rounded-md p-2 text-slate-500 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition"
           >
             {theme === "dark" ? <BsSun size={18} /> : <BsMoon size={18} />}
           </button>
@@ -272,7 +285,7 @@ const Navigation = () => {
             <div className="relative hidden md:block" ref={dropdownRef}>
               <button
                 onClick={() => setDropdownOpen((v) => !v)}
-                className="flex items-center gap-2 text-white hover:text-pink-400"
+                className={`flex items-center gap-2 transition-colors ${location.pathname.startsWith('/admin') || location.pathname === '/profile' ? 'text-emerald-500 font-semibold' : 'text-slate-800 dark:text-white hover:text-emerald-500 dark:hover:text-emerald-400'}`}
                 aria-haspopup="menu"
                 aria-expanded={dropdownOpen}
                 aria-label="User menu"
@@ -314,7 +327,7 @@ const Navigation = () => {
                       </li>
                       <li>
                         <Link
-                          to="/admin/products"
+                          to="/admin/addProducts"
                           className="block px-4 py-2 hover:bg-gray-800"
                         >
                           Add Products
@@ -375,17 +388,17 @@ const Navigation = () => {
               )}
             </div>
           ) : (
-            <div className="hidden md:flex items-center gap-3 text-white">
+            <div className="hidden md:flex items-center gap-3 text-slate-800 dark:text-white">
               <Link
                 to="/login"
-                className="flex items-center gap-1 hover:text-pink-400"
+                className="flex items-center gap-1 hover:text-emerald-600 dark:hover:text-emerald-400 transition"
               >
                 <AiOutlineLogin className="text-xl" />
                 <span className="hidden sm:inline">Login</span>
               </Link>
               <Link
                 to="/register"
-                className="flex items-center gap-1 hover:text-pink-400"
+                className="flex items-center gap-1 hover:text-emerald-400"
               >
                 <AiOutlineUserAdd className="text-xl" />
                 <span className="hidden sm:inline">Register</span>
@@ -396,7 +409,7 @@ const Navigation = () => {
           {/* Mobile toggle */}
           <button
             ref={toggleBtnRef}
-            className="md:hidden text-white p-2 hover:text-pink-400"
+            className="md:hidden text-slate-800 dark:text-white p-2 hover:text-emerald-500"
             aria-label="Toggle menu"
             onClick={(e) => {
               // prevent the document click handler from seeing this click
@@ -413,26 +426,38 @@ const Navigation = () => {
         </div>
       </div>
 
+      {/* Mobile Search Bar Always Visible */}
+      <div className="md:hidden px-4 pb-4">
+        <form onSubmit={submitSearch} className="relative group flex gap-2">
+          <div className="relative flex-1">
+            <AiOutlineSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 text-lg group-focus-within:text-emerald-500 transition-colors" />
+            <input
+              type="search"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search for brands and products"
+              className="w-full pl-11 pr-4 py-2.5 bg-slate-100/90 dark:bg-slate-800/60 backdrop-blur-sm border border-transparent focus:border-emerald-500 focus:bg-white dark:focus:bg-slate-900 rounded-full text-[15px] text-slate-900 dark:text-gray-100 placeholder:text-slate-500 dark:placeholder:text-gray-400 outline-none transition-all shadow-inner"
+            />
+          </div>
+          <button 
+            type="submit" 
+            className="w-10 h-10 shrink-0 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full flex items-center justify-center shadow-md transition-colors"
+            aria-label="Search"
+          >
+            <AiOutlineSearch size={20} />
+          </button>
+        </form>
+      </div>
+
+
+
       {/* Mobile menu */}
       {mobileOpen && (
         <div
           ref={mobileRef}
-          className="md:hidden border-t border-slate-800 bg-[#0b0b0b] dark:bg-slate-900 z-50"
+          className="md:hidden border-t border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-3xl z-50 shadow-2xl"
         >
-          <div className="px-4 pt-3">
-            <form onSubmit={submitSearch}>
-              <input
-                type="search"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search products..."
-                className="w-full rounded-full bg-slate-900/70 border border-slate-700 px-4 py-2 text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-pink-500"
-                aria-label="Search products"
-              />
-            </form>
-          </div>
-
-          <div className="px-4 py-3 space-y-3 text-white">
+          <div className="px-4 py-3 space-y-3 text-slate-800 dark:text-white">
             <Link to="/" className="flex items-center gap-2">
               <AiOutlineHome className="text-lg" /> Home
             </Link>
@@ -456,20 +481,20 @@ const Navigation = () => {
                     <Link to="/admin" className="block py-2">
                       Admin Dashboard
                     </Link>
-                    <Link to="/admin/productlist" className="block py-2">
-                      Admin: Products
+                    <Link to="/admin/addProducts" className="block py-2">
+                      Add Products
                     </Link>
-                    <Link to="/admin/categorylist" className="block py-2">
-                      Admin: Categories
+                    <Link to="/admin/categories" className="block py-2">
+                      Categories
                     </Link>
-                    <Link to="/admin/allproductslist" className="block py-2">
-                      Admin: All Products
+                    <Link to="/admin/all-products" className="block py-2">
+                      All Products
                     </Link>
-                    <Link to="/admin/userlist" className="block py-2">
-                      Admin: Users
+                    <Link to="/admin/users" className="block py-2">
+                      Users
                     </Link>
-                    <Link to="/admin/orderlist" className="block py-2">
-                      Admin: Orders
+                    <Link to="/admin/orders" className="block py-2">
+                      Orders
                     </Link>
                   </div>
                 )}
@@ -493,7 +518,50 @@ const Navigation = () => {
           </div>
         </div>
       )}
-    </nav>
+      </nav>
+
+      {/* Mobile Bottom Navigation Bar */}
+      <div className="md:hidden fixed bottom-0 left-0 w-full bg-white/95 dark:bg-zinc-950/95 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 z-[100] pb-safe" style={{ transform: "translateZ(0)" }}>
+        <div className="flex items-center justify-around h-14">
+          <Link to="/" className={`flex flex-col items-center justify-center gap-1 w-full h-full transition-colors ${location.pathname === '/' ? 'text-emerald-500 dark:text-emerald-400 font-bold scale-105' : 'text-slate-500 dark:text-slate-400 hover:text-emerald-500 dark:hover:text-emerald-400'}`}>
+            <AiOutlineHome size={20} />
+            <span className="text-[10px] font-medium">Home</span>
+          </Link>
+          <Link to="/shop" className={`flex flex-col items-center justify-center gap-1 w-full h-full transition-colors ${location.pathname === '/shop' ? 'text-emerald-500 dark:text-emerald-400 font-bold scale-105' : 'text-slate-500 dark:text-slate-400 hover:text-emerald-500 dark:hover:text-emerald-400'}`}>
+            <AiOutlineSearch size={20} />
+            <span className="text-[10px] font-medium">Shop</span>
+          </Link>
+          <Link to="/cart" className={`flex flex-col items-center justify-center gap-1 w-full h-full relative transition-colors ${location.pathname === '/cart' ? 'text-emerald-500 dark:text-emerald-400 font-bold scale-105' : 'text-slate-500 dark:text-slate-400 hover:text-emerald-500 dark:hover:text-emerald-400'}`}>
+            <div className="relative">
+              <AiOutlineShoppingCart size={20} />
+              {cartItems.length > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 bg-emerald-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-[9px] font-bold">
+                  {cartItems.reduce((a, c) => a + c.qty, 0)}
+                </span>
+              )}
+            </div>
+            <span className="text-[10px] font-medium">Cart</span>
+          </Link>
+          {userInfo && !userInfo.isAdmin && (
+             <Link to="/user-orders" className={`flex flex-col items-center justify-center gap-1 w-full h-full transition-colors ${location.pathname === '/user-orders' ? 'text-emerald-500 dark:text-emerald-400 font-bold scale-105' : 'text-slate-500 dark:text-slate-400 hover:text-emerald-500 dark:hover:text-emerald-400'}`}>
+                <AiOutlineShopping size={20} />
+                <span className="text-[10px] font-medium">Orders</span>
+             </Link>
+          )}
+          {userInfo ? (
+            <Link to="/profile" className={`flex flex-col items-center justify-center gap-1 w-full h-full transition-colors ${location.pathname.startsWith('/profile') || location.pathname.startsWith('/admin') ? 'text-emerald-500 dark:text-emerald-400 font-bold scale-105' : 'text-slate-500 dark:text-slate-400 hover:text-emerald-500 dark:hover:text-emerald-400'}`}>
+              <AiOutlineUserAdd size={20} />
+              <span className="text-[10px] font-medium">Profile</span>
+            </Link>
+          ) : (
+            <Link to="/login" className={`flex flex-col items-center justify-center gap-1 w-full h-full transition-colors ${location.pathname === '/login' ? 'text-emerald-500 dark:text-emerald-400 font-bold scale-105' : 'text-slate-500 dark:text-slate-400 hover:text-emerald-500 dark:hover:text-emerald-400'}`}>
+              <AiOutlineLogin size={20} />
+              <span className="text-[10px] font-medium">Login</span>
+            </Link>
+          )}
+        </div>
+      </div>
+    </>
   );
 };
 

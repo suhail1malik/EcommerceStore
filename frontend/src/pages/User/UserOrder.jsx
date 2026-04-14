@@ -59,7 +59,7 @@ const UserOrder = () => {
           <div className="mt-4">
             <Link
               to="/shop"
-              className="text-indigo-600 dark:text-indigo-300 hover:underline"
+              className="text-emerald-600 dark:text-emerald-300 hover:underline"
             >
               Go to shop
             </Link>
@@ -112,8 +112,8 @@ const UserOrder = () => {
                     />
                   </td>
 
-                  <td className="px-4 py-4 text-sm text-gray-900 dark:text-slate-100 break-words">
-                    {order._id}
+                  <td className="px-4 py-4 text-sm font-semibold text-gray-900 dark:text-slate-100 font-mono tracking-wider">
+                    ORD-{order._id.substring(18).toUpperCase()}
                   </td>
 
                   <td className="px-4 py-4 text-sm text-gray-600 dark:text-slate-300">
@@ -141,7 +141,7 @@ const UserOrder = () => {
                   <td className="px-4 py-4 text-right">
                     <Link to={`/order/${order._id}`}>
                       <button
-                        className="inline-flex items-center px-3 py-1 rounded bg-pink-500 hover:bg-pink-600 text-white"
+                        className="inline-flex items-center px-3 py-1 rounded bg-emerald-500 hover:bg-emerald-600 text-white"
                         aria-label={`View order ${order._id}`}
                       >
                         View Details

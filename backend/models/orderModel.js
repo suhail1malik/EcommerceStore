@@ -66,6 +66,12 @@ const orderSchema = new mongoose.Schema(
     paidAt: {
       type: Date,
     },
+    isPacked: { type: Boolean, default: false },
+    packedAt: { type: Date },
+    isShipped: { type: Boolean, default: false },
+    shippedAt: { type: Date },
+    isOutForDelivery: { type: Boolean, default: false },
+    outForDeliveryAt: { type: Date },
     isDelivered: {
       type: Boolean,
       required: true,
@@ -74,6 +80,9 @@ const orderSchema = new mongoose.Schema(
     deliveredAt: {
       type: Date,
     },
+    estimatedDeliveryDate: { type: Date },
+    isCancelled: { type: Boolean, default: false },
+    cancelledAt: { type: Date },
     createdAt: {
       type: Date,
       default: Date.now,

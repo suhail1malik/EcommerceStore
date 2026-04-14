@@ -60,17 +60,22 @@ const Login = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="mt-1 w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-3 text-slate-100 focus:outline-none focus:ring-2 focus:ring-pink-500"
+              className="mt-1 w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-3 text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
 
           <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-slate-200"
-            >
-              Password
-            </label>
+            <div className="flex justify-between items-center box-border pt-1">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-slate-200"
+              >
+                Password
+              </label>
+              <Link to="/forgot-password" className="text-xs font-semibold text-emerald-500 hover:text-emerald-400 transition-colors">
+                Forgot password?
+              </Link>
+            </div>
             <input
               type="password"
               id="password"
@@ -78,14 +83,14 @@ const Login = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Your password"
-              className="mt-1 w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-3 text-slate-100 focus:outline-none focus:ring-2 focus:ring-pink-500"
+              className="mt-1 w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-3 text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
 
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full rounded-md bg-pink-600 px-4 py-3 text-white font-medium hover:bg-pink-700 disabled:opacity-50"
+            className="w-full rounded-md bg-emerald-600 px-4 py-3 text-white font-medium hover:bg-emerald-700 disabled:opacity-50"
           >
             {isLoading ? "Signing in..." : "Sign in"}
           </button>
@@ -97,7 +102,7 @@ const Login = () => {
           New Customer?{" "}
           <Link
             to={redirect ? `/register?redirect=${redirect}` : "/register"}
-            className="text-pink-500 hover:underline"
+            className="text-emerald-500 hover:underline"
           >
             Create your account
           </Link>

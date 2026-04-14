@@ -50,10 +50,14 @@ const RazorpayPayment = ({
 
     try {
       // First, create a Razorpay order
+      const receiptString = orderId && orderId !== "new_order" 
+        ? `ord_${orderId.slice(-6)}_${Date.now().toString().slice(-6)}` 
+        : `receipt_${Date.now().toString().slice(-8)}`;
+
       const razorpayOrderResponse = await createRazorpayOrder({
         amount: amount,
         currency: "INR",
-        receipt: `ord_${orderId.slice(-6)}_${Date.now().toString().slice(-6)}`, // Shorter receipt
+        receipt: receiptString,
       }).unwrap();
 
       if (!razorpayOrderResponse.success) {
@@ -79,7 +83,7 @@ const RazorpayPayment = ({
           toast.success("Payment successful!");
           onSuccess({
             ...response,
-            dbOrderId: orderId, // Pass the database order ID
+            ...(orderId && orderId !== "new_order" && { dbOrderId: orderId }),
           });
         },
         // Enable all payment methods
@@ -90,10 +94,10 @@ const RazorpayPayment = ({
         },
         notes: {
           address: "Customer Address",
-          db_order_id: orderId, // Store database order ID in notes
+          ...(orderId && orderId !== "new_order" && { db_order_id: orderId }),
         },
         theme: {
-          color: razorpayConfig.theme?.color || "#F37254",
+          color: razorpayConfig.theme?.color || "#d97706",
         },
         // Enable all payment options
         config: {
@@ -164,7 +168,7 @@ const RazorpayPayment = ({
       className={`py-3 px-6 rounded-lg text-lg font-semibold w-full transition-colors ${
         disabled || loading
           ? "bg-gray-400 text-gray-200 cursor-not-allowed"
-          : "bg-orange-500 text-white hover:bg-orange-600"
+          : "bg-emerald-600 dark:bg-emerald-500 text-white hover:bg-emerald-700 focus:ring-4 focus:ring-emerald-500/20"
       }`}
     >
       {loading ? "Processing..." : `Pay ₹${amount?.toLocaleString("en-IN")}`}

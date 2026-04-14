@@ -1,40 +1,204 @@
 // src/pages/Admin/UserList.jsx
-import React, { useEffect, useMemo, useState } from "react";
-import {
-  FaTrash,
-  FaEdit,
-  FaCheck,
-  FaTimes,
-  FaSearch,
-  FaCopy,
-} from "react-icons/fa";
+import React, { useState, useMemo, useEffect } from "react";
+import { FaSearch, FaTimes, FaCheck, FaTrash, FaCheckCircle } from "react-icons/fa";
+import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "react-toastify";
 import Loader from "../../components/Loader";
 import Message from "../../components/Message";
-import {
-  useDeleteUserMutation,
-  useGetUsersQuery,
-  useUpdateUserMutation,
-} from "../../redux/api/usersApiSlice";
-import { toast } from "react-toastify";
+import { useDeleteUserMutation, useGetUsersQuery, useUpdateUserMutation } from "../../redux/api/usersApiSlice";
 
-/**
- * Responsive UserList (improved)
- * - Desktop: table (md+)
- * - Mobile: compact collapsible cards (block md:hidden)
- * - Title attributes show full ID/email on hover (desktop)
- * - Copy ID button on mobile
- */
+const UserRow = ({ user, refetchUsers }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  
+  const [deleteUser, { isLoading: isDeleting }] = useDeleteUserMutation();
+  const [updateUser, { isLoading: isUpdating }] = useUpdateUserMutation();
+  
+  const [editName, setEditName] = useState(user.username || "");
+  const [editEmail, setEditEmail] = useState(user.email || "");
+  const [role, setRole] = useState(user.isAdmin ? "admin" : "user");
+
+  const saveChanges = async () => {
+    try {
+      await updateUser({
+        userId: user._id,
+        username: editName,
+        email: editEmail,
+        isAdmin: role === "admin"
+      }).unwrap();
+      toast.success("User updated successfully");
+      if (refetchUsers) refetchUsers();
+    } catch (err) {
+      toast.error(err?.data?.message || err?.error || "Update failed");
+    }
+  };
+
+  const roleChangeHandler = async (e) => {
+    const newRole = e.target.value;
+    setRole(newRole);
+    if (newRole !== (user.isAdmin ? "admin" : "user")) {
+       try {
+         await updateUser({
+           userId: user._id,
+           username: editName,
+           email: editEmail,
+           isAdmin: newRole === "admin"
+         }).unwrap();
+         toast.success(`Role changed to ${newRole}`);
+         if (refetchUsers) refetchUsers();
+       } catch (err) {
+         toast.error(err?.data?.message || err?.error || "Update failed");
+       }
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!window.confirm("Are you sure you want to delete this user?")) return;
+    try {
+      await deleteUser(user._id).unwrap();
+      toast.success("User deleted");
+      if (refetchUsers) refetchUsers();
+    } catch (err) {
+      toast.error(err?.data?.message || err?.error || "Delete failed");
+    }
+  };
+
+  return (
+    <div className={`group bg-white dark:bg-slate-800 rounded-[20px] md:rounded-[24px] overflow-hidden border transition-all duration-500 ${
+      isExpanded 
+        ? "border-emerald-200 dark:border-emerald-500/30 shadow-xl ring-1 ring-emerald-100 dark:ring-emerald-500/20" 
+        : "border-gray-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:border-gray-300 dark:hover:border-slate-600"
+    }`}>
+      {/* Header Row */}
+      <button 
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full flex items-center justify-between p-4 md:p-6 text-left hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+      >
+        <div className="flex items-center gap-4 md:gap-6">
+          <div className="relative w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-2xl flex items-center justify-center bg-gray-100 dark:bg-slate-900 shrink-0 border border-gray-200 dark:border-slate-700">
+            <span className="text-xl md:text-2xl font-bold text-gray-400 dark:text-gray-500 uppercase">
+              {user.username ? user.username.charAt(0) : "U"}
+            </span>
+          </div>
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+               <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
+                 Acc-{user._id.substring(0, 6)}
+               </span>
+               <div className={`w-1.5 h-1.5 rounded-full ${user.isAdmin ? "bg-purple-500" : "bg-gray-300 dark:bg-gray-600"}`} />
+            </div>
+            <h3 className="text-sm md:text-base font-bold text-gray-900 dark:text-slate-100 line-clamp-1">
+              {user.username || "—"}
+            </h3>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-4 md:gap-8">
+           <div className="hidden sm:block text-right">
+              <p className="text-xs font-bold text-gray-900 dark:text-slate-200 max-w-[200px] truncate">{user.email}</p>
+           </div>
+           
+           <div className={`px-3 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-colors ${
+              user.isAdmin 
+                ? "bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-500/30" 
+                : "bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-slate-600"
+           }`}>
+              {user.isAdmin ? "Admin" : "User"}
+           </div>
+        </div>
+      </button>
+
+      {/* Expanded Content */}
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+          >
+            <div className="px-4 pb-6 md:px-8 md:pb-8 pt-2 border-t border-gray-100 dark:border-slate-700/50">
+               <div className="mt-4 grid grid-cols-1 md:grid-cols-12 gap-6">
+                 
+                 {/* Internal Profile Modifier */}
+                 <div className="md:col-span-7 lg:col-span-8 bg-gray-50 dark:bg-slate-900/50 p-5 md:p-6 rounded-2xl border border-gray-100 dark:border-slate-700/50">
+                    <h4 className="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-slate-400 mb-4">Account Profile Data</h4>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                       <div>
+                         <label className="block text-[10px] font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400 mb-2">Display Name</label>
+                         <input 
+                           type="text"
+                           value={editName}
+                           onChange={(e) => setEditName(e.target.value)}
+                           className="w-full bg-white dark:bg-slate-800 border-2 border-gray-200 dark:border-slate-600 text-sm font-semibold text-gray-900 dark:text-slate-100 px-4 py-3 rounded-xl outline-none focus:border-emerald-500 transition-colors"
+                         />
+                       </div>
+                       <div>
+                         <label className="block text-[10px] font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400 mb-2">Email Address</label>
+                         <input 
+                           type="email"
+                           value={editEmail}
+                           onChange={(e) => setEditEmail(e.target.value)}
+                           className="w-full bg-white dark:bg-slate-800 border-2 border-gray-200 dark:border-slate-600 text-sm font-semibold text-gray-900 dark:text-slate-100 px-4 py-3 rounded-xl outline-none focus:border-emerald-500 transition-colors"
+                         />
+                       </div>
+                    </div>
+
+                    <div className="mt-6 flex justify-end">
+                       <button
+                         onClick={saveChanges}
+                         disabled={isUpdating}
+                         className="flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-bold transition-all shadow-md shadow-emerald-600/20 active:scale-95 disabled:opacity-50"
+                       >
+                         {isUpdating ? "Saving..." : <><FaCheck className="w-4 h-4" /> Save Profile</>}
+                       </button>
+                    </div>
+                 </div>
+
+                 {/* Internal Access Role Dropdown Modifier */}
+                 <div className="md:col-span-5 lg:col-span-4 flex flex-col justify-between">
+                    <div className="bg-purple-50 dark:bg-purple-900/10 p-5 rounded-2xl border border-purple-100 dark:border-purple-500/20 mb-4 flex-1">
+                       <h4 className="text-[10px] font-bold uppercase tracking-widest text-purple-600 dark:text-purple-400 mb-4">Access Hierarchy</h4>
+                       
+                       <div className="relative group/drop">
+                           <select 
+                             className="w-full appearance-none bg-white dark:bg-slate-800 border-2 border-purple-200 dark:border-purple-500/30 text-gray-900 dark:text-slate-100 font-bold text-sm px-5 py-3.5 rounded-xl outline-none focus:border-purple-600 focus:ring-4 focus:ring-purple-600/20 transition-all cursor-pointer disabled:opacity-50 inline-block"
+                             value={role}
+                             onChange={roleChangeHandler}
+                             disabled={isUpdating}
+                           >
+                             <option value="user">Standard User</option>
+                             <option value="admin">Administrator Privilege</option>
+                           </select>
+                           <div className="absolute right-4 top-1/2 -translate-y-1/2 text-purple-400 group-focus-within/drop:text-purple-600 pointer-events-none transition-colors">
+                              <FaCheckCircle className="w-4 h-4" />
+                           </div>
+                        </div>
+                        <p className="mt-3 text-xs text-purple-700 dark:text-purple-300 font-medium leading-relaxed">Changing the role will instantly grant or revoke admin dashboard access.</p>
+                    </div>
+
+                    <button
+                      onClick={handleDelete}
+                      disabled={isDeleting}
+                      className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-500/30 rounded-xl text-sm font-bold transition-all active:scale-95 disabled:opacity-50"
+                    >
+                      <FaTrash className="w-4 h-4" />
+                      Revoke & Delete
+                    </button>
+                 </div>
+
+               </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
 
 const UserList = () => {
   const { data: users = [], refetch, isLoading, error } = useGetUsersQuery();
-  const [deleteUser] = useDeleteUserMutation();
-  const [updateUser] = useUpdateUserMutation();
-
   const [query, setQuery] = useState("");
-  const [editableUserId, setEditableUserId] = useState(null);
-  const [editableUserName, setEditableUserName] = useState("");
-  const [editableUserEmail, setEditableUserEmail] = useState("");
-  const [rowLoading, setRowLoading] = useState({}); // { [id]: { deleting, updating } }
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -51,435 +215,65 @@ const UserList = () => {
     refetch();
   }, [refetch]);
 
-  const setRowBusy = (id, state) =>
-    setRowLoading((prev) => ({ ...prev, [id]: { ...prev[id], ...state } }));
-
-  const deleteHandler = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this user?")) return;
-    try {
-      setRowBusy(id, { deleting: true });
-      await deleteUser(id).unwrap();
-      toast.success("User deleted");
-      await refetch();
-    } catch (err) {
-      toast.error(err?.data?.message || err?.error || "Delete failed");
-    } finally {
-      setRowBusy(id, { deleting: false });
-    }
-  };
-
-  const startEdit = (user) => {
-    setEditableUserId(user._id);
-    setEditableUserName(user.username || "");
-    setEditableUserEmail(user.email || "");
-  };
-
-  const cancelEdit = () => {
-    setEditableUserId(null);
-    setEditableUserName("");
-    setEditableUserEmail("");
-  };
-
-  const updateHandler = async (id) => {
-    if (!editableUserName.trim() || !editableUserEmail.trim()) {
-      toast.error("Name and email are required");
-      return;
-    }
-    try {
-      setRowBusy(id, { updating: true });
-      await updateUser({
-        userId: id,
-        username: editableUserName.trim(),
-        email: editableUserEmail.trim(),
-      }).unwrap();
-      toast.success("User updated");
-      cancelEdit();
-      await refetch();
-    } catch (err) {
-      toast.error(err?.data?.message || err?.error || "Update failed");
-    } finally {
-      setRowBusy(id, { updating: false });
-    }
-  };
-
-  const copyToClipboard = async (text) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      toast.success("Copied ID to clipboard");
-    } catch {
-      toast.error("Copy failed");
-    }
-  };
-
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="bg-slate-800 border border-slate-700 rounded-xl shadow-sm overflow-hidden">
-        {/* header */}
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-6">
-          <div className="w-full md:w-auto">
-            <h1 className="text-2xl font-semibold text-slate-100">Users</h1>
-            <p className="text-sm text-slate-400 mt-1">
-              Manage application users
-            </p>
-          </div>
-
-          <div className="w-full md:w-1/3">
-            <label className="relative block">
-              <span className="sr-only">Search users</span>
-              {/* <FaSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 pointer-events-none" /> */}
-              <input
-                type="search"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search by name, email or id..."
-                aria-label="Search users"
-                className="w-full pl-10 pr-10 py-2 rounded-md bg-slate-900 border border-slate-700 text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-pink-500"
-              />
-              {query && (
-                <button
-                  type="button"
-                  onClick={() => setQuery("")}
-                  aria-label="Clear search"
-                  className="absolute right-8 top-1/2 -translate-y-1/2 text-slate-300 hover:text-white p-1"
-                >
-                  {/* <FaTimes className="w-3.5 h-3.5" /> */}
-                </button>
-              )}
-            </label>
-          </div>
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+      <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+           <h1 className="text-3xl font-bold text-gray-900 dark:text-slate-100 tracking-tight">Identity Register</h1>
+           <p className="text-sm text-gray-500 dark:text-slate-400 mt-2 font-medium">Manage and escalate platform privileges.</p>
         </div>
-
-        {/* CONTENT */}
-        <div className="overflow-hidden md:overflow-visible">
-          {/* TABLE FOR md+ */}
-          <div className="hidden md:block overflow-x-auto">
-            {isLoading ? (
-              <div className="p-6">
-                <Loader />
-              </div>
-            ) : error ? (
-              <div className="p-6">
-                <Message variant="danger">
-                  {error?.data?.message ||
-                    error?.error ||
-                    "Failed to load users"}
-                </Message>
-              </div>
-            ) : (
-              <table className="min-w-full divide-y divide-slate-700">
-                <thead className="bg-slate-900/40 sticky top-0">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
-                      ID
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
-                      Name
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
-                      Email
-                    </th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-slate-400 uppercase tracking-wider">
-                      Admin
-                    </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-slate-400 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-
-                <tbody className="bg-transparent divide-y divide-slate-700">
-                  {filtered.length === 0 && (
-                    <tr>
-                      <td
-                        colSpan={5}
-                        className="px-6 py-10 text-center text-slate-400"
-                      >
-                        No users found.
-                      </td>
-                    </tr>
-                  )}
-
-                  {filtered.map((user, idx) => {
-                    const busy = rowLoading[user._id] || {};
-                    const rowBg = idx % 2 === 0 ? "bg-slate-800/20" : "";
-                    return (
-                      <tr
-                        key={user._id}
-                        className={`${rowBg} hover:bg-slate-900/30`}
-                      >
-                        {/* ID with title (full ID on hover) */}
-                        <td
-                          className="px-6 py-4 max-w-[220px] text-sm text-slate-300 break-words"
-                          title={user._id}
-                        >
-                          <span className="truncate block max-w-[220px]">
-                            {user._id}
-                          </span>
-                        </td>
-
-                        <td className="px-6 py-4">
-                          {editableUserId === user._id ? (
-                            <div className="flex items-center gap-2">
-                              <input
-                                type="text"
-                                value={editableUserName}
-                                onChange={(e) =>
-                                  setEditableUserName(e.target.value)
-                                }
-                                className="px-3 py-2 rounded-md bg-slate-700 border border-slate-600 text-slate-100 w-56"
-                                aria-label={`Edit name for ${user.username}`}
-                              />
-                            </div>
-                          ) : (
-                            <div className="text-sm font-medium text-slate-100">
-                              {user.username || "—"}
-                            </div>
-                          )}
-                        </td>
-
-                        <td className="px-6 py-4">
-                          {editableUserId === user._id ? (
-                            <input
-                              type="email"
-                              value={editableUserEmail}
-                              onChange={(e) =>
-                                setEditableUserEmail(e.target.value)
-                              }
-                              className="px-3 py-2 rounded-md bg-slate-700 border border-slate-600 text-slate-100 w-64"
-                              aria-label={`Edit email for ${user.email}`}
-                            />
-                          ) : (
-                            <div
-                              className="text-sm text-slate-200 break-words max-w-[320px]"
-                              title={user.email}
-                            >
-                              <span className="truncate block max-w-[320px]">
-                                {user.email}
-                              </span>
-                            </div>
-                          )}
-                        </td>
-
-                        <td className="px-6 py-4 text-center">
-                          {user.isAdmin ? (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded bg-emerald-700/20 text-emerald-300 text-xs">
-                              Admin
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded bg-slate-700/40 text-slate-300 text-xs">
-                              User
-                            </span>
-                          )}
-                        </td>
-
-                        <td className="px-6 py-4 text-right">
-                          {editableUserId === user._id ? (
-                            <div className="inline-flex items-center gap-2">
-                              <button
-                                onClick={() => updateHandler(user._id)}
-                                disabled={busy.updating}
-                                className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white text-sm disabled:opacity-60"
-                                aria-label={`Save changes for ${user.username}`}
-                              >
-                                {busy.updating ? (
-                                  "Saving..."
-                                ) : (
-                                  <>
-                                    <FaCheck /> Save
-                                  </>
-                                )}
-                              </button>
-
-                              <button
-                                onClick={cancelEdit}
-                                className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-slate-700 hover:bg-slate-600 text-slate-200 text-sm"
-                              >
-                                <FaTimes /> Cancel
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="inline-flex items-center gap-2">
-                              <button
-                                onClick={() => startEdit(user)}
-                                className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-slate-700 hover:bg-slate-600 text-slate-200 text-sm"
-                                aria-label={`Edit ${user.username}`}
-                              >
-                                <FaEdit /> Edit
-                              </button>
-
-                              <button
-                                onClick={() => deleteHandler(user._id)}
-                                disabled={busy.deleting}
-                                className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-red-600 hover:bg-red-500 text-white text-sm disabled:opacity-60"
-                                aria-label={`Delete ${user.username}`}
-                              >
-                                {busy.deleting ? (
-                                  "Deleting..."
-                                ) : (
-                                  <>
-                                    <FaTrash /> Delete
-                                  </>
-                                )}
-                              </button>
-                            </div>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            )}
-          </div>
-
-          {/* MOBILE: collapsible cards (visible on small screens only) */}
-          <div className="block md:hidden p-4 space-y-4">
-            {isLoading ? (
-              <Loader />
-            ) : error ? (
-              <Message variant="danger">
-                {error?.data?.message || error?.error || "Failed to load users"}
-              </Message>
-            ) : filtered.length === 0 ? (
-              <div className="text-center text-slate-400 py-8">
-                No users found.
-              </div>
-            ) : (
-              filtered.map((user) => {
-                const busy = rowLoading[user._id] || {};
-                const isEditing = editableUserId === user._id;
-                return (
-                  <details
-                    key={user._id}
-                    className="group bg-slate-900 border border-slate-700 rounded-lg"
-                  >
-                    <summary className="flex items-center justify-between px-4 py-3 cursor-pointer">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className="flex-shrink-0 w-10 h-10 rounded-md bg-slate-800 flex items-center justify-center text-white font-semibold">
-                          {user.username
-                            ? user.username.charAt(0).toUpperCase()
-                            : "U"}
-                        </div>
-                        <div className="min-w-0">
-                          <div className="text-sm font-semibold text-slate-100 truncate">
-                            {user.username || "—"}
-                          </div>
-                          <div className="text-xs text-slate-400 truncate">
-                            {user.email}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs px-2 py-1 rounded bg-slate-700/40 text-slate-300">
-                          {user.isAdmin ? "Admin" : "User"}
-                        </span>
-                      </div>
-                    </summary>
-
-                    <div className="px-4 pb-4">
-                      <div className="mt-2 text-xs text-slate-400">
-                        <strong className="text-slate-300">ID:</strong>{" "}
-                        <span className="block break-words">{user._id}</span>
-                      </div>
-
-                      <div className="mt-3 space-y-2">
-                        {isEditing ? (
-                          <>
-                            <input
-                              type="text"
-                              value={editableUserName}
-                              onChange={(e) =>
-                                setEditableUserName(e.target.value)
-                              }
-                              className="w-full px-3 py-2 rounded-md bg-slate-800 border border-slate-700 text-slate-100"
-                              aria-label={`Edit name for ${user.username}`}
-                            />
-                            <input
-                              type="email"
-                              value={editableUserEmail}
-                              onChange={(e) =>
-                                setEditableUserEmail(e.target.value)
-                              }
-                              className="w-full px-3 py-2 rounded-md bg-slate-800 border border-slate-700 text-slate-100"
-                              aria-label={`Edit email for ${user.email}`}
-                            />
-                            <div className="flex gap-2">
-                              <button
-                                onClick={() => updateHandler(user._id)}
-                                disabled={busy.updating}
-                                className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md bg-emerald-600 text-white disabled:opacity-60"
-                              >
-                                {busy.updating ? (
-                                  "Saving..."
-                                ) : (
-                                  <>
-                                    <FaCheck /> Save
-                                  </>
-                                )}
-                              </button>
-                              <button
-                                onClick={cancelEdit}
-                                className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md bg-slate-700 text-slate-100"
-                              >
-                                <FaTimes /> Cancel
-                              </button>
-                            </div>
-                          </>
-                        ) : (
-                          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                            <button
-                              onClick={() => startEdit(user)}
-                              className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-slate-700 hover:bg-slate-600 text-slate-100"
-                            >
-                              <FaEdit /> Edit
-                            </button>
-                            <button
-                              onClick={() => deleteHandler(user._id)}
-                              disabled={busy.deleting}
-                              className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-red-600 hover:bg-red-500 text-white disabled:opacity-60"
-                            >
-                              {busy.deleting ? (
-                                "Deleting..."
-                              ) : (
-                                <>
-                                  <FaTrash /> Delete
-                                </>
-                              )}
-                            </button>
-                            <button
-                              onClick={() => copyToClipboard(user._id)}
-                              className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-slate-700 text-slate-100"
-                              title="Copy user id"
-                            >
-                              <FaCopy /> Copy ID
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </details>
-                );
-              })
-            )}
-          </div>
-        </div>
-
-        {/* footer */}
-        <div className="border-t border-slate-700 p-4 flex items-center justify-between">
-          <div className="text-sm text-slate-400">
-            {filtered.length} / {users.length} users
-          </div>
-          <div className="flex items-center gap-2">
+        <div className="relative group w-full md:w-80">
+          <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-emerald-500 transition-colors" />
+          <input 
+            type="text" 
+            placeholder="Search active identities..." 
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="pl-11 pr-10 py-3 bg-white dark:bg-slate-800 border-2 border-gray-200 dark:border-slate-700 rounded-[16px] text-sm font-medium focus:outline-none focus:border-emerald-500 dark:focus:border-emerald-500 transition-all w-full text-gray-900 dark:text-slate-100"
+          />
+          {query && (
             <button
-              onClick={() => refetch()}
-              className="px-3 py-2 rounded-md bg-slate-700 hover:bg-slate-600 text-slate-100 text-sm"
+              type="button"
+              onClick={() => setQuery("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
             >
-              Refresh
+              <FaTimes className="w-3.5 h-3.5" />
             </button>
-          </div>
+          )}
         </div>
       </div>
+
+      {isLoading ? (
+        <div className="space-y-4">
+           {[1,2,3,4].map(n => (
+             <div key={n} className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-[24px] p-6 h-[90px] animate-pulse flex items-center gap-4">
+                <div className="w-12 h-12 bg-gray-100 dark:bg-slate-700 rounded-xl" />
+                <div>
+                  <div className="w-24 h-3 bg-gray-100 dark:bg-slate-700 rounded mb-2" />
+                  <div className="w-32 h-4 bg-gray-100 dark:bg-slate-700 rounded" />
+                </div>
+             </div>
+           ))}
+        </div>
+      ) : error ? (
+        <Message variant="danger">
+          {error?.data?.message || error?.error || "Failed to load users"}
+        </Message>
+      ) : (
+        <div className="space-y-4">
+          {filtered.map((user) => (
+            <UserRow key={user._id} user={user} refetchUsers={refetch} />
+          ))}
+          {filtered.length === 0 && (
+             <div className="py-20 text-center">
+               <div className="w-16 h-16 bg-gray-50 dark:bg-slate-800 text-gray-300 dark:text-slate-600 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-gray-100 dark:border-slate-700">
+                 <FaSearch className="w-6 h-6" />
+               </div>
+               <p className="text-gray-400 dark:text-slate-500 font-medium">No identical identities found.</p>
+             </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

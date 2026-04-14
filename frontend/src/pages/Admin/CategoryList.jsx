@@ -6,22 +6,40 @@ import {
   useDeleteCategoryMutation,
   useFetchCategoriesQuery,
 } from "../../redux/api/categoryApiSlice";
+import { useUploadProductImageMutation } from "../../redux/api/productApiSlice";
 
 import { toast } from "react-toastify";
 import CategoryForm from "../../components/CategoryForm";
 import Modal from "../../components/Modal";
-import AdminMenu from "./AdminMenu";
 
 const CategoryList = () => {
   const { data: categories } = useFetchCategoriesQuery();
   const [name, setName] = useState("");
+  const [image, setImage] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [updatingName, setUpdatingName] = useState("");
+  const [updatingImage, setUpdatingImage] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
 
   const [createCategory] = useCreateCategoryMutation();
   const [updateCategory] = useUpdateCategoryMutation();
   const [deleteCategory] = useDeleteCategoryMutation();
+  const [uploadProductImage, { isLoading: isUploading }] = useUploadProductImageMutation();
+
+  const handleFileSelect = async (e, setImageState) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      const formData = new FormData();
+      formData.append("image", file);
+      try {
+        const res = await uploadProductImage(formData).unwrap();
+        setImageState(res.image);
+        toast.success("Image uploaded successfully!");
+      } catch (err) {
+        toast.error(err?.data?.message || err.error || "Upload failed");
+      }
+    }
+  };
 
   const handleCreateCategory = async (e) => {
     e.preventDefault();
@@ -32,11 +50,12 @@ const CategoryList = () => {
     }
 
     try {
-      const result = await createCategory({ name }).unwrap();
+      const result = await createCategory({ name, image }).unwrap();
       if (result.error) {
         toast.error(result.error);
       } else {
         setName("");
+        setImage("");
         toast.success(`${result.name} is created.`);
       }
     } catch (error) {
@@ -58,6 +77,7 @@ const CategoryList = () => {
         categoryId: selectedCategory._id,
         updatedCategory: {
           name: updatingName,
+          image: updatingImage,
         },
       }).unwrap();
 
@@ -67,6 +87,7 @@ const CategoryList = () => {
         toast.success(`${result.name} is updated`);
         setSelectedCategory(null);
         setUpdatingName("");
+        setUpdatingImage("");
         setModalVisible(false);
       }
     } catch (error) {
@@ -92,41 +113,65 @@ const CategoryList = () => {
   };
 
   return (
-    <div className="ml-[10rem] flex flex-col md:flex-row">
-      <AdminMenu />
-      <div className="md:w-3/4 p-3">
-        <div className="h-12">Manage Categories</div>
-        <CategoryForm
-          value={name}
-          setValue={setName}
-          handleSubmit={handleCreateCategory}
-        />
-        <br />
-        <hr />
+    <div className="max-w-4xl mx-auto flex flex-col md:flex-row gap-8">
+      <div className="w-full">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Manage Categories</h1>
+          <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">Create, update, or delete product categories</p>
+        </div>
+        
+        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm mb-8">
+          <CategoryForm
+            value={name}
+            setValue={setName}
+            imageValue={image}
+            setImageValue={setImage}
+            isUploading={isUploading}
+            onImageSelect={(e) => handleFileSelect(e, setImage)}
+            handleSubmit={handleCreateCategory}
+          />
+        </div>
 
-        <div className="flex flex-wrap">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {categories?.map((category) => (
-            <div key={category._id}>
-              <button
-                className="bg-white border border-pink-500 text-pink-500 py-2 px-4 rounded-lg m-3 hover:bg-pink-500 hover:text-white focus:outline-none foucs:ring-2 focus:ring-pink-500 focus:ring-opacity-50"
-                onClick={() => {
-                  {
-                    setModalVisible(true);
-                    setSelectedCategory(category);
-                    setUpdatingName(category.name);
-                  }
-                }}
-              >
-                {category.name}
-              </button>
+            <div key={category._id} className="relative group cursor-pointer" onClick={() => {
+              setModalVisible(true);
+              setSelectedCategory(category);
+              setUpdatingName(category.name);
+              setUpdatingImage(category.image || "");
+            }}>
+              {category.image ? (
+                <div className="aspect-square rounded-xl overflow-hidden border-2 border-slate-200 dark:border-slate-700 group-hover:border-emerald-500 transition-colors shadow-sm relative">
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex items-center justify-center">
+                     <span className="text-white font-bold">Edit</span>
+                  </div>
+                  <img src={category.image.startsWith("http") ? category.image : `${import.meta.env.VITE_BACKEND_URL || ""}${category.image}`} alt={category.name} className="w-full h-full object-cover" />
+                  <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-3 pt-8">
+                    <span className="text-white font-bold block truncate">{category.name}</span>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  className="w-full h-full min-h-[100px] bg-white dark:bg-slate-800 border-2 border-emerald-500 text-emerald-600 dark:text-emerald-400 font-medium py-2 px-4 rounded-xl hover:bg-emerald-500 hover:text-white dark:hover:bg-emerald-500 dark:hover:text-white transition-all focus:outline-none shadow-sm flex items-center justify-center break-words"
+                >
+                  {category.name}
+                </button>
+              )}
             </div>
           ))}
         </div>
 
         <Modal isOpen={modalVisible} onClose={() => setModalVisible(false)}>
+          <div className="mb-4">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white">Edit Category</h2>
+          </div>
           <CategoryForm
             value={updatingName}
             setValue={(value) => setUpdatingName(value)}
+            imageValue={updatingImage}
+            setImageValue={setUpdatingImage}
+            isUploading={isUploading}
+            onImageSelect={(e) => handleFileSelect(e, setUpdatingImage)}
             handleSubmit={handleUpdateCategory}
             buttonText="Update"
             handleDelete={handleDeleteCategory}

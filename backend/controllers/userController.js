@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 import createToken from "../utils/createToken.js";
 
 const createUser = asyncHandler(async (req, res) => {
-  const { username, email, password, isAdmin } = req.body;
+  const { username, email, password } = req.body;
 
   if (!username || !email || !password) {
     throw new Error("Please fill all the inputs.");
@@ -21,7 +21,7 @@ const createUser = asyncHandler(async (req, res) => {
     username,
     email,
     password: hashedPassword,
-    isAdmin,
+    isAdmin: false,
   });
 
   await newUser.save();
@@ -44,7 +44,7 @@ const loginUser = asyncHandler(async (req, res) => {
   }
 
   // Find user by email
-  const existingUser = await User.findOne({ email });
+  const existingUser = await User.findOne({ email }).select("+password");
 
   if (!existingUser) {
     return res.status(401).json({ message: "Invalid email or password" });
@@ -150,22 +150,93 @@ const getUserById = asyncHandler(async (req, res) => {
 const updateUserById = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id);
 
+  if (user) {
+    user.username = req.body.username || user.username;
+    user.email = req.body.email || user.email;
+    user.isAdmin = Boolean(req.body.isAdmin);
+
+    const updatedUser = await user.save();
+    res.json({
+      _id: updatedUser._id,
+      username: updatedUser.username,
+      email: updatedUser.email,
+      isAdmin: updatedUser.isAdmin,
+    });
+  } else {
+    res.status(404);
+    throw new Error("User not found");
+  }
+});
+
+import crypto from "crypto";
+import sendEmail from "../utils/sendEmail.js";
+
+const forgotPassword = asyncHandler(async (req, res) => {
+  const user = await User.findOne({ email: req.body.email });
+
   if (!user) {
-    return res.status(404).json({ message: "User not found" });
+    res.status(404);
+    throw new Error("There is no user with that email");
   }
 
-  user.username = req.body.username || user.username;
-  user.email = req.body.email || user.email;
-  user.isAdmin = Boolean(req.body.isAdmin);
+  // Generate random token
+  const resetToken = crypto.randomBytes(20).toString("hex");
 
-  const updatedUser = await user.save();
+  // Hash the token & set to resetPasswordToken field (with 10 min expiration)
+  user.resetPasswordToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+  
+  user.resetPasswordExpire = Date.now() + 10 * 60 * 1000; // 10 minutes
 
-  res.json({
-    _id: updatedUser._id,
-    username: updatedUser.username,
-    email: updatedUser.email,
-    isAdmin: updatedUser.isAdmin,
+  await user.save({ validateBeforeSave: false });
+
+  // Create reset url
+  const resetUrl = `${process.env.FRONTEND_URL || "http://localhost:5173"}/reset-password/${resetToken}`;
+
+  const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please make a PUT request to: \n\n ${resetUrl}`;
+
+  try {
+    await sendEmail({
+      email: user.email,
+      subject: "Password Reset Token",
+      message,
+    });
+    res.status(200).json({ success: true, message: "Email sent" });
+  } catch (error) {
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+    await user.save({ validateBeforeSave: false });
+    res.status(500);
+    throw new Error("Email could not be sent");
+  }
+});
+
+const resetPassword = asyncHandler(async (req, res) => {
+  // Get hashed token
+  const resetPasswordToken = crypto
+    .createHash("sha256")
+    .update(req.params.token)
+    .digest("hex");
+
+  const user = await User.findOne({
+    resetPasswordToken,
+    resetPasswordExpire: { $gt: Date.now() },
   });
+
+  if (!user) {
+    res.status(400);
+    throw new Error("Invalid token or token has expired");
+  }
+
+  // Set new password
+  user.password = req.body.password;
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpire = undefined;
+
+  await user.save();
+  res.status(200).json({ success: true, message: "Password updated successfully" });
 });
 
 export {
@@ -178,4 +249,6 @@ export {
   deleteUserById,
   getUserById,
   updateUserById,
+  forgotPassword,
+  resetPassword,
 };

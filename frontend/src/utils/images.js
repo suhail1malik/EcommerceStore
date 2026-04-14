@@ -3,7 +3,13 @@ const DEFAULT_PLACEHOLDER = "/uploads/default-product.jpg";
 export const getImageSource = (imagePath = "") => {
   if (!imagePath) return DEFAULT_PLACEHOLDER;
   try {
-    if (imagePath.startsWith("http")) return imagePath;
+    if (imagePath.startsWith("http")) {
+      // Automatic Image Optimization if Cloudinary url
+      if (imagePath.includes("res.cloudinary.com") && !imagePath.includes("q_auto") && imagePath.includes("/upload/")) {
+        return imagePath.replace("/upload/", "/upload/q_auto,f_auto/");
+      }
+      return imagePath;
+    }
   } catch {
     return DEFAULT_PLACEHOLDER;
   }

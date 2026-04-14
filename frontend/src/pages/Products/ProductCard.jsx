@@ -5,6 +5,8 @@ import { useDispatch } from "react-redux";
 import { addToCart } from "../../redux/features/cart/cartSlice";
 import { toast, Slide } from "react-toastify";
 import HeartIcon from "./HeartIcon";
+import Tilt from "react-parallax-tilt";
+import { getImageSource } from "../../utils/images";
 const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 const ProductCard = ({ product }) => {
@@ -20,89 +22,109 @@ const ProductCard = ({ product }) => {
     });
   };
 
-  const getImageUrl = (img) => {
-    if (!img) return "/images/placeholder.png"; // local placeholder in /public/images/
-    if (img.startsWith("http")) return img; // Cloudinary or any external
-    return `${BASE_URL}${img}`; // local backend uploads
-  };
+
 
   return (
-    <div className="group flex flex-col rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm hover:shadow-lg transition overflow-hidden">
+    // The card spans full width of grid cell
+    <Tilt
+      tiltMaxAngleX={8}
+      tiltMaxAngleY={8}
+      perspective={1000}
+      scale={1.02}
+      transitionSpeed={1500}
+      glareEnable={true}
+      glareMaxOpacity={0.15}
+      glarePosition="all"
+      className="product-card bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl shadow-sm hover:shadow-2xl hover:shadow-emerald-500/10 transition-shadow duration-300 overflow-hidden flex flex-col h-full group relative"
+    >
+      {/* Full-card invisible link */}
+      <Link 
+        to={`/product/${product._id}`} 
+        className="absolute inset-0 z-10 opacity-0"
+        aria-label={`View details of ${product.name}`}
+      />
+
       {/* Image wrapper */}
-      <section className="relative">
-        <Link
-          to={`/product/${product._id}`}
-          className="block aspect-[3/3] bg-slate-100 dark:bg-slate-900 overflow-hidden"
-        >
-          <img
-            src={getImageUrl(product.image)}
-            alt={product.name}
-            loading="lazy"
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            onError={(e) => {
-              // prevent infinite loop
-              const fallback = "/images/placeholder.png";
-              if (!e.target.src.includes(fallback)) {
-                e.target.src = fallback;
-              }
-            }}
-          />
-        </Link>
+      <section className="relative aspect-[4/5] bg-slate-100 dark:bg-slate-900 overflow-hidden shrink-0">
+        <img
+          src={getImageSource(product.image)}
+          alt={product.name}
+          loading="lazy"
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          onError={(e) => {
+            // prevent infinite loop
+            const fallback = "/images/placeholder.png";
+            if (!e.target.src.includes(fallback)) {
+              e.target.src = fallback;
+            }
+          }}
+        />
+        
         {/* Heart / wishlist */}
-        <div className="absolute top-2 right-2">
+        <div className="absolute top-2 right-2 z-20">
           <HeartIcon product={product} />
         </div>
-        {/* Brand badge */}
-        {product?.brand && (
-          <span className="absolute bottom-2 left-2 bg-pink-600/90 text-white text-xs px-2 py-0.5 rounded-full">
-            {product.brand}
-          </span>
+        
+        {/* Rating overlay */}
+        {(product?.rating > 0 || product?.numReviews > 0) && (
+          <div className="absolute bottom-2 left-2 z-20 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm text-slate-800 dark:text-slate-200 text-[10px] sm:text-xs font-bold px-1.5 py-0.5 rounded flex items-center gap-1 shadow-sm border border-slate-200/50 dark:border-slate-700/50">
+            <span>{product?.rating}</span>
+            <span className="text-emerald-500 text-[10px]">★</span>
+            <span className="text-slate-400 font-normal">|</span>
+            <span>{product?.numReviews}</span>
+          </div>
         )}
+        
+        {/* Quick Add to Cart - Visible on group hover */}
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            addToCartHandler(product, 1);
+          }}
+          className="absolute bottom-2 right-2 z-20 p-2 max-sm:p-1.5 bg-white/90 dark:bg-slate-900/90 text-slate-800 dark:text-slate-200 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110 hover:bg-gradient-to-r hover:from-emerald-500 hover:to-teal-500 hover:text-white dark:hover:from-emerald-600 dark:hover:to-teal-600 hover:shadow-lg hover:shadow-teal-500/20"
+          title="Add to Cart"
+        >
+          <AiOutlineShoppingCart size={16} />
+        </button>
       </section>
 
       {/* Content */}
-      <div className="flex flex-col flex-1 p-3 sm:p-4">
-        {/* Title + Price */}
-        <div className="flex justify-between items-start">
-          <Link to={`/product/${product._id}`}>
-            <h5 className="text-sm sm:text-base font-medium text-slate-900 dark:text-white line-clamp-2 group-hover:text-pink-600">
-              {product?.name}
-            </h5>
-          </Link>
-          <p className="ml-2 text-base font-semibold text-pink-600">
+      <div className="flex flex-col flex-1 p-2 sm:p-3 pt-3.5 bg-white dark:bg-slate-900 transition-colors relative z-0 pointer-events-none">
+        {/* Brand */}
+        <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate pr-2">
+          {product?.brand || "Brand"}
+        </h3>
+        
+        {/* Name */}
+        <div className="block mb-1.5 line-clamp-1 mt-0.5">
+          <span className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+            {product?.name}
+          </span>
+        </div>
+        
+        {/* Price Row */}
+        <div className="mt-auto flex items-center flex-wrap gap-1.5 sm:gap-2 pt-1 border-t border-transparent">
+          <span className="text-sm sm:text-base font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500 dark:from-emerald-400 dark:to-teal-300">
             {product?.price?.toLocaleString("en-IN", {
               style: "currency",
               currency: "INR",
+              maximumFractionDigits: 0
             })}
-          </p>
-        </div>
-
-        {/* Description */}
-        <p className="mt-2 text-xs text-slate-600 dark:text-slate-300 line-clamp-2">
-          {product?.description}
-        </p>
-
-        {/* Actions */}
-        <div className="mt-auto flex justify-between items-center pt-3">
-          <Link
-            to={`/product/${product._id}`}
-            className="inline-flex items-center px-3 py-1.5 text-xs sm:text-sm font-medium text-white bg-pink-600 rounded-lg hover:bg-pink-700"
-          >
-            Read More →
-          </Link>
-
-          <button
-            className="p-2 rounded-full bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition"
-            onClick={() => addToCartHandler(product, 1)}
-          >
-            <AiOutlineShoppingCart
-              size={20}
-              className="text-slate-800 dark:text-white"
-            />
-          </button>
+          </span>
+          {product?.originalPrice && (
+            <span className="text-[10px] sm:text-xs text-slate-400 line-through">
+              ₹{product?.originalPrice}
+            </span>
+          )}
+          {product?.discount && (
+            <span className="text-[10px] sm:text-xs font-bold text-teal-500">
+              ({product.discount}% OFF)
+            </span>
+          )}
         </div>
       </div>
-    </div>
+    </Tilt>
   );
 };
 

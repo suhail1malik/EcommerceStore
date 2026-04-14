@@ -40,9 +40,37 @@ export const orderApiSlice = apiSlice.injectEndpoints({
       }),
     }),
 
+    markAsPacked: builder.mutation({
+      query: (orderId) => ({
+        url: `${ORDERS_URL}/${orderId}/packed`,
+        method: "PUT",
+      }),
+    }),
+
+    markAsShipped: builder.mutation({
+      query: (orderId) => ({
+        url: `${ORDERS_URL}/${orderId}/shipped`,
+        method: "PUT",
+      }),
+    }),
+
+    markAsOutForDelivery: builder.mutation({
+      query: (orderId) => ({
+        url: `${ORDERS_URL}/${orderId}/out-for-delivery`,
+        method: "PUT",
+      }),
+    }),
+
     deliverOrder: builder.mutation({
       query: (orderId) => ({
         url: `${ORDERS_URL}/${orderId}/deliver`,
+        method: "PUT",
+      }),
+    }),
+
+    cancelOrder: builder.mutation({
+      query: (orderId) => ({
+        url: `${ORDERS_URL}/${orderId}/cancel`,
         method: "PUT",
       }),
     }),
@@ -70,6 +98,10 @@ export const {
   useGetOrderDetailsQuery,
   usePayOrderMutation,
   useGetMyOrdersQuery,
+  useMarkAsPackedMutation,
+  useMarkAsShippedMutation,
+  useMarkAsOutForDeliveryMutation,
   useDeliverOrderMutation,
+  useCancelOrderMutation,
   useGetOrdersQuery,
 } = orderApiSlice;

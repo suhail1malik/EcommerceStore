@@ -1,6 +1,7 @@
 // src/pages/admin/AdminDashboard.jsx
 import { useMemo } from "react";
 import Chart from "react-apexcharts";
+import { Link } from "react-router-dom";
 
 import { useGetUsersQuery } from "../../redux/api/usersApiSlice";
 import {
@@ -9,7 +10,6 @@ import {
   useGetTotalSalesQuery,
 } from "../../redux/api/orderApiSlice";
 
-import AdminMenu from "./AdminMenu";
 import OrderList from "./OrderList";
 import Loader from "../../components/Loader";
 
@@ -58,56 +58,66 @@ const AdminDashboard = () => {
   }, [salesDetail]);
 
   return (
-    <>
-      <AdminMenu />
-
-      <section className="xl:ml-[4rem] md:ml-[0rem]">
-        <div className="w-[80%] flex justify-around flex-wrap">
-          {/* Sales Card */}
-          <div className="rounded-lg bg-black p-5 w-[20rem] mt-5">
-            <div className="font-bold rounded-full w-[3rem] bg-pink-500 text-center p-3">
-              $
-            </div>
-            <p className="mt-5">Sales</p>
-            <h1 className="text-xl font-bold">
-              {loadingSales ? <Loader /> : `$ ${totalSalesValue.toFixed(2)}`}
-            </h1>
+    <div className="flex flex-col gap-6">
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">
+        Dashboard Overview
+      </h1>
+      
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Sales Card */}
+        <Link to="/admin/orders" className="block rounded-xl bg-white dark:bg-slate-800 shadow-sm border border-gray-100 dark:border-slate-700 p-6 flex flex-col items-start transition-all hover:scale-[1.02] hover:shadow-md hover:border-emerald-500/30 group cursor-pointer w-full">
+          <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 text-xl mb-4 group-hover:scale-110 transition-transform">
+            💲
           </div>
+          <p className="text-sm font-medium text-gray-500 dark:text-gray-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">Total Sales</p>
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-slate-100 mt-1">
+            {loadingSales ? <Loader /> : `$${totalSalesValue.toFixed(2)}`}
+          </h2>
+        </Link>
 
-          {/* Customers Card */}
-          <div className="rounded-lg bg-black p-5 w-[20rem] mt-5">
-            <div className="font-bold rounded-full w-[3rem] bg-pink-500 text-center p-3">
-              👥
-            </div>
-            <p className="mt-5">Customers</p>
-            <h1 className="text-xl font-bold">
-              {loadingCustomers ? <Loader /> : customersCount}
-            </h1>
+        {/* Customers Card */}
+        <Link to="/admin/users" className="block rounded-xl bg-white dark:bg-slate-800 shadow-sm border border-gray-100 dark:border-slate-700 p-6 flex flex-col items-start transition-all hover:scale-[1.02] hover:shadow-md hover:border-emerald-500/30 group cursor-pointer w-full">
+          <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 text-xl mb-4 group-hover:scale-110 transition-transform">
+            👥
           </div>
+          <p className="text-sm font-medium text-gray-500 dark:text-gray-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">Customers</p>
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-slate-100 mt-1">
+            {loadingCustomers ? <Loader /> : customersCount}
+          </h2>
+        </Link>
 
-          {/* Orders Card */}
-          <div className="rounded-lg bg-black p-5 w-[20rem] mt-5">
-            <div className="font-bold rounded-full w-[3rem] bg-pink-500 text-center p-3">
-              🧾
-            </div>
-            <p className="mt-5">All Orders</p>
-            <h1 className="text-xl font-bold">
-              {loadingOrders ? <Loader /> : totalOrdersCount}
-            </h1>
+        {/* Orders Card */}
+        <Link to="/admin/orders" className="block rounded-xl bg-white dark:bg-slate-800 shadow-sm border border-gray-100 dark:border-slate-700 p-6 flex flex-col items-start transition-all hover:scale-[1.02] hover:shadow-md hover:border-emerald-500/30 group cursor-pointer w-full sm:col-span-2 lg:col-span-1">
+          <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 text-xl mb-4 group-hover:scale-110 transition-transform">
+            🧾
+          </div>
+          <p className="text-sm font-medium text-gray-500 dark:text-gray-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">All Orders</p>
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-slate-100 mt-1">
+            {loadingOrders ? <Loader /> : totalOrdersCount}
+          </h2>
+        </Link>
+      </div>
+
+      {/* Chart */}
+      <div className="bg-white dark:bg-slate-800 shadow-sm border border-gray-100 dark:border-slate-700 rounded-xl p-6 w-full">
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-slate-200 mb-4">Revenue Analytics</h3>
+        <div className="w-full overflow-x-auto">
+          <div className="min-w-[600px]">
+            <Chart options={options} series={series} type="line" height={350} width="100%" />
           </div>
         </div>
+      </div>
 
-        {/* Chart — use same type as options (line) and numeric width */}
-        <div className="ml-[10rem] mt-[4rem]">
-          <Chart options={options} series={series} type="line" width={700} />
+      {/* Recent Orders Overview */}
+      <div className="bg-white dark:bg-slate-800 shadow-sm border border-gray-100 dark:border-slate-700 rounded-xl overflow-hidden">
+        <div className="p-6 border-b border-gray-100 dark:border-slate-700">
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-slate-200">Recent Orders</h3>
         </div>
-
-        {/* Orders list */}
-        <div className="mt-[4rem]">
-          <OrderList />
+        <div className="-mt-8">
+          <OrderList insideDashboard={true} />
         </div>
-      </section>
-    </>
+      </div>
+    </div>
   );
 };
 

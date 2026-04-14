@@ -12,6 +12,8 @@ import Loader from "../../components/Loader";
  * - Right content: fills remaining width
  * - Reviews & Related use responsive grid or horizontal scroll on large screens
  */
+import { useGetMyOrdersQuery } from "../../redux/api/orderApiSlice";
+import { useMemo, useEffect } from "react";
 
 const ProductTabs = ({
   loadingProductReview,
@@ -24,7 +26,21 @@ const ProductTabs = ({
   product,
 }) => {
   const { data, isLoading } = useGetTopProductsQuery();
-  const [activeTab, setActiveTab] = useState(1);
+  const { data: myOrders } = useGetMyOrdersQuery(undefined, { skip: !userInfo });
+  const [activeTab, setActiveTab] = useState(2); // default to All Reviews
+
+  const hasPurchased = useMemo(() => {
+    if (!userInfo || !myOrders || !product) return false;
+    return myOrders.some(order => 
+      order.isPaid && order.orderItems.some(item => item.product === product._id)
+    );
+  }, [userInfo, myOrders, product]);
+
+  useEffect(() => {
+    if (hasPurchased) {
+      setActiveTab(1);
+    }
+  }, [hasPurchased]);
 
   if (isLoading) return <Loader />;
 
@@ -34,27 +50,29 @@ const ProductTabs = ({
       <div className="flex flex-col md:flex-row gap-6">
         {/* LEFT: Tabs menu - full width on mobile, fixed narrow column on md+ */}
         <nav className="w-full md:w-44 flex md:flex-col gap-2">
-          <button
-            type="button"
-            onClick={() => setActiveTab(1)}
-            aria-pressed={activeTab === 1}
-            className={`text-left px-2 py-3 rounded ${
-              activeTab === 1
-                ? "font-semibold text-slate-100"
-                : "text-slate-300"
-            }`}
-          >
-            Write Your Review
-          </button>
+          {hasPurchased && (
+            <button
+              type="button"
+              onClick={() => setActiveTab(1)}
+              aria-pressed={activeTab === 1}
+              className={`text-left px-3 py-3 rounded-lg transition-colors ${
+                activeTab === 1
+                  ? "bg-emerald-600/10 font-bold text-emerald-600 dark:text-emerald-500"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50"
+              }`}
+            >
+              Write Your Review
+            </button>
+          )}
 
           <button
             type="button"
             onClick={() => setActiveTab(2)}
             aria-pressed={activeTab === 2}
-            className={`text-left px-2 py-3 rounded ${
+            className={`text-left px-3 py-3 rounded-lg transition-colors ${
               activeTab === 2
-                ? "font-semibold text-slate-100"
-                : "text-slate-300"
+                ? "bg-emerald-600/10 font-bold text-emerald-600 dark:text-emerald-500"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50"
             }`}
           >
             All Reviews
@@ -64,10 +82,10 @@ const ProductTabs = ({
             type="button"
             onClick={() => setActiveTab(3)}
             aria-pressed={activeTab === 3}
-            className={`text-left px-2 py-3 rounded ${
+            className={`text-left px-3 py-3 rounded-lg transition-colors ${
               activeTab === 3
-                ? "font-semibold text-slate-100"
-                : "text-slate-300"
+                ? "bg-emerald-600/10 font-bold text-emerald-600 dark:text-emerald-500"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50"
             }`}
           >
             Related Products
@@ -77,69 +95,59 @@ const ProductTabs = ({
         {/* RIGHT: Content area (fills remaining space) */}
         <div className="flex-1">
           {/* Tab 1: Write review */}
-          {activeTab === 1 && (
+          {activeTab === 1 && hasPurchased && (
             <div className="mt-1">
-              {userInfo ? (
-                <form onSubmit={submitHandler} className="space-y-4">
-                  <div>
-                    <label
-                      htmlFor="rating"
-                      className="block text-sm font-medium text-slate-200 mb-2"
-                    >
-                      Rating
-                    </label>
-                    <select
-                      id="rating"
-                      required
-                      value={rating}
-                      onChange={(e) => setRating(Number(e.target.value))}
-                      className="w-full max-w-md p-2 rounded border bg-slate-800 text-slate-200"
-                    >
-                      <option value="">Select</option>
-                      <option value={1}>1 - Inferior</option>
-                      <option value={2}>2 - Decent</option>
-                      <option value={3}>3 - Great</option>
-                      <option value={4}>4 - Excellent</option>
-                      <option value={5}>5 - Exceptional</option>
-                    </select>
-                  </div>
+              <form onSubmit={submitHandler} className="space-y-4">
+                <div>
+                  <label
+                    htmlFor="rating"
+                    className="block text-sm font-medium text-slate-800 dark:text-slate-200 mb-2"
+                  >
+                    Rating
+                  </label>
+                  <select
+                    id="rating"
+                    required
+                    value={rating}
+                    onChange={(e) => setRating(Number(e.target.value))}
+                    className="w-full max-w-md p-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500 outline-none"
+                  >
+                    <option value="">Select</option>
+                    <option value={1}>1 - Inferior</option>
+                    <option value={2}>2 - Decent</option>
+                    <option value={3}>3 - Great</option>
+                    <option value={4}>4 - Excellent</option>
+                    <option value={5}>5 - Exceptional</option>
+                  </select>
+                </div>
 
-                  <div>
-                    <label
-                      htmlFor="comment"
-                      className="block text-sm font-medium text-slate-200 mb-2"
-                    >
-                      Comment
-                    </label>
-                    <textarea
-                      id="comment"
-                      rows="4"
-                      required
-                      value={comment}
-                      onChange={(e) => setComment(e.target.value)}
-                      className="w-full max-w-xl p-2 rounded border bg-slate-800 text-slate-200"
-                    />
-                  </div>
+                <div>
+                  <label
+                    htmlFor="comment"
+                    className="block text-sm font-medium text-slate-800 dark:text-slate-200 mb-2"
+                  >
+                    Comment
+                  </label>
+                  <textarea
+                    id="comment"
+                    rows="4"
+                    required
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    className="w-full max-w-xl p-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500 outline-none"
+                  />
+                </div>
 
-                  <div>
-                    <button
-                      type="submit"
-                      disabled={loadingProductReview}
-                      className="bg-pink-600 text-white px-4 py-2 rounded-md"
-                    >
-                      Submit
-                    </button>
-                  </div>
-                </form>
-              ) : (
-                <p className="text-slate-300">
-                  Please{" "}
-                  <Link to="/login" className="text-pink-400 underline">
-                    sign in
-                  </Link>{" "}
-                  to write a review
-                </p>
-              )}
+                <div>
+                  <button
+                    type="submit"
+                    disabled={loadingProductReview}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-3 rounded-lg transition-colors shadow-lg shadow-emerald-600/20"
+                  >
+                    Submit Review
+                  </button>
+                </div>
+              </form>
             </div>
           )}
 
@@ -147,24 +155,24 @@ const ProductTabs = ({
           {activeTab === 2 && (
             <div className="mt-1 space-y-4">
               {!product.reviews || product.reviews.length === 0 ? (
-                <p className="text-slate-400">No reviews yet.</p>
+                <p className="text-slate-500 dark:text-slate-400">No reviews yet.</p>
               ) : (
                 <div className="grid grid-cols-1 gap-4">
                   {product.reviews.map((review) => (
                     <article
                       key={review._id}
-                      className="bg-slate-800 p-4 rounded-lg"
+                      className="bg-slate-50 dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700/50 shadow-sm"
                     >
                       <div className="flex justify-between items-start">
-                        <strong className="text-slate-100">
+                        <strong className="text-slate-900 dark:text-slate-100 text-lg">
                           {review.name}
                         </strong>
-                        <time className="text-sm text-slate-400">
+                        <time className="text-sm text-slate-500 dark:text-slate-400">
                           {(review.createdAt || "").substring(0, 10)}
                         </time>
                       </div>
 
-                      <div className="mt-2 text-slate-200">
+                      <div className="mt-2 text-slate-700 dark:text-slate-300 leading-relaxed">
                         {review.comment}
                       </div>
 

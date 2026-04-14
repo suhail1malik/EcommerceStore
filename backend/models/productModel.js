@@ -6,6 +6,7 @@ const reviewSchema = mongoose.Schema(
     name: { type: String, required: true },
     rating: { type: Number, required: true },
     comment: { type: String, required: true },
+    isVerifiedPurchase: { type: Boolean, default: false },
     user: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
@@ -17,8 +18,9 @@ const reviewSchema = mongoose.Schema(
 
 const productSchema = mongoose.Schema(
   {
-    name: { type: String, required: true },
+    name: { type: String, required: true, index: true },
     image: { type: String, required: true },
+    images: { type: [String], default: [] },
     brand: { type: String, required: true },
     quantity: { type: Number, required: true },
     category: { type: ObjectId, ref: "Category", required: true },

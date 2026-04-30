@@ -18,22 +18,26 @@ async function getCroppedImg(imageSrc, pixelCrop) {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
 
-  // Output dimensions
-  canvas.width = pixelCrop.width;
-  canvas.height = pixelCrop.height;
+  // Output dimensions (cap maximum size to prevent browser crash upon extreme zoom out)
+  const maxSize = 2500;
+  let scale = 1;
+  if (pixelCrop.width > maxSize || pixelCrop.height > maxSize) {
+    scale = maxSize / Math.max(pixelCrop.width, pixelCrop.height);
+  }
 
-  // Draw the cropped image onto the canvas
-  ctx.drawImage(
-    image,
-    pixelCrop.x,
-    pixelCrop.y,
-    pixelCrop.width,
-    pixelCrop.height,
-    0,
-    0,
-    pixelCrop.width,
-    pixelCrop.height
-  );
+  canvas.width = Math.floor(pixelCrop.width * scale);
+  canvas.height = Math.floor(pixelCrop.height * scale);
+
+  // Fill white background for empty spaces
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Apply scaling and translation to draw image properly
+  ctx.scale(scale, scale);
+  ctx.translate(-pixelCrop.x, -pixelCrop.y);
+
+  // Draw the natural image at 0,0. The translation will position it correctly inside the crop window!
+  ctx.drawImage(image, 0, 0);
 
   return new Promise((resolve) => {
     canvas.toBlob((blob) => {
@@ -93,6 +97,9 @@ export default function ImageCropper({ imageSrc, onCropDone, onCropCancel }) {
             crop={crop}
             zoom={zoom}
             aspect={4 / 5} // Lock aspect ratio to 4:5
+            minZoom={0.2}
+            maxZoom={3}
+            restrictPosition={false}
             onCropChange={setCrop}
             onCropComplete={onCropComplete}
             onZoomChange={setZoom}
@@ -106,9 +113,9 @@ export default function ImageCropper({ imageSrc, onCropDone, onCropCancel }) {
             <input
               type="range"
               value={zoom}
-              min={1}
+              min={0.2}
               max={3}
-              step={0.1}
+              step={0.05}
               aria-labelledby="Zoom"
               onChange={(e) => setZoom(e.target.value)}
               className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-500"

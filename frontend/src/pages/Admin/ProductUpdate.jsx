@@ -36,6 +36,7 @@ const AdminProductUpdate = () => {
 
   const [cropSrc, setCropSrc] = useState(null);
   const [isCropping, setIsCropping] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
   // helper: convert product image (could be relative path or full cloudinary url)
   const normalizeImageUrl = (img) => {
@@ -95,6 +96,23 @@ const AdminProductUpdate = () => {
       setCropSrc(url);
       setIsCropping(true);
       e.target.value = ""; // clear so we can pick exact same file again
+    }
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleFileSelect({ target: { files: e.dataTransfer.files, value: "" } });
     }
   };
 
@@ -257,9 +275,18 @@ const AdminProductUpdate = () => {
         )}
 
           <div className="mb-6">
-            <label className="border-2 border-dashed border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-300 px-4 block w-full text-center rounded-xl cursor-pointer font-semibold py-12 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 hover:border-emerald-300 transition-colors">
-              <span className="text-emerald-500 block mb-2 text-2xl">📸</span>
-              Click to Upload Another Gallery Image
+            <label 
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              className={`border-2 border-dashed px-4 block w-full text-center rounded-xl cursor-pointer font-semibold py-12 text-gray-700 dark:text-slate-300 transition-colors ${
+                isDragging
+                  ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20"
+                  : "border-gray-300 dark:border-slate-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 hover:border-emerald-300"
+              }`}
+            >
+              <span className={`block mb-2 text-2xl transition-transform ${isDragging ? 'scale-125 text-emerald-600' : 'text-emerald-500'}`}>📸</span>
+              {isDragging ? "Drop image here" : "Click or Drop to Upload Image"}
               <input
                 type="file"
                 name="images"

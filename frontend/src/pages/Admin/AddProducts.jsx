@@ -1,5 +1,4 @@
-import React from "react";
-import { useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   useCreateProductMutation,
@@ -12,6 +11,7 @@ import ImageCropper from "../../components/ImageCropper";
 const AddProducts = () => {
   const [image, setImage] = useState("");
   const [galleryUrls, setGalleryUrls] = useState([]);
+  const [isDragging, setIsDragging] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
@@ -67,6 +67,23 @@ const AddProducts = () => {
       setCropSrc(url);
       setIsCropping(true);
       e.target.value = ""; // clear so we can pick exact same file again
+    }
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleFileSelect({ target: { files: e.dataTransfer.files, value: "" } });
     }
   };
 
@@ -170,9 +187,20 @@ const AddProducts = () => {
 
         {/* Upload Image */}
         <div className="mb-6">
-          <label className="border-2 border-dashed border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-300 px-4 block w-full text-center rounded-xl cursor-pointer font-semibold py-12 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 hover:border-emerald-300 transition-colors">
-            <span className="text-emerald-500 block mb-2 text-2xl">📸</span>
-            {image ? "Click to add another gallery image" : "Click to select a Cover Image"}
+          <label 
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            className={`border-2 border-dashed px-4 block w-full text-center rounded-xl cursor-pointer font-semibold py-12 text-gray-700 dark:text-slate-300 transition-colors ${
+              isDragging
+                ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20"
+                : "border-gray-300 dark:border-slate-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 hover:border-emerald-300"
+            }`}
+          >
+            <span className={`block mb-2 text-2xl transition-transform ${isDragging ? 'scale-125 text-emerald-600' : 'text-emerald-500'}`}>📸</span>
+            {image 
+              ? isDragging ? "Drop image to add to gallery" : "Click or Drop to add another gallery image" 
+              : isDragging ? "Drop image to set cover" : "Click or Drop to select a Cover Image"}
             <input
               type="file"
               name="images"

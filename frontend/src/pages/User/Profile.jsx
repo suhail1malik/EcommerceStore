@@ -44,6 +44,7 @@ const Profile = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
   // inline validation errors
   const [errors, setErrors] = useState({});
@@ -75,6 +76,23 @@ const Profile = () => {
       toast.error(error.message);
     } finally {
       setUploadingImage(false);
+    }
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      uploadFileHandler({ target: { files: e.dataTransfer.files } });
     }
   };
 
@@ -301,22 +319,30 @@ const Profile = () => {
                       <label htmlFor="profilePic" className="block text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-slate-400 mb-2">
                         Profile Picture
                       </label>
-                      <div className="flex items-center gap-4">
-                        <input
-                          id="profilePic"
-                          name="profilePic"
-                          type="file"
-                          accept="image/*"
-                          onChange={uploadFileHandler}
-                          className="block w-full text-sm text-gray-500 dark:text-gray-400
-                            file:mr-4 file:py-2.5 file:px-4
-                            file:rounded-lg file:border-0
-                            file:text-xs file:font-bold file:uppercase file:tracking-widest
-                            file:bg-emerald-100 file:text-emerald-600
-                            dark:file:bg-emerald-900/30 dark:file:text-emerald-400
-                            hover:file:bg-emerald-200 dark:hover:file:bg-emerald-900/50 transition-all cursor-pointer"
-                        />
-                        {uploadingImage && <Loader />}
+                      <div className="flex flex-col gap-4">
+                        <label 
+                          htmlFor="profilePic"
+                          onDragOver={handleDragOver}
+                          onDragLeave={handleDragLeave}
+                          onDrop={handleDrop}
+                          className={`border-2 border-dashed px-4 py-6 block w-full text-center rounded-xl cursor-pointer font-semibold text-gray-700 dark:text-slate-300 transition-colors ${
+                            isDragging
+                              ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20"
+                              : "border-gray-300 dark:border-slate-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 hover:border-emerald-300"
+                          }`}
+                        >
+                          <span className={`block mb-2 text-2xl transition-transform ${isDragging ? 'scale-125 text-emerald-600' : 'text-emerald-500'}`}>📸</span>
+                          {uploadingImage ? "Uploading..." : isDragging ? "Drop image here" : "Click or Drop to select Profile Pic"}
+                          <input
+                            id="profilePic"
+                            name="profilePic"
+                            type="file"
+                            accept="image/*"
+                            onChange={uploadFileHandler}
+                            className="hidden"
+                            disabled={uploadingImage}
+                          />
+                        </label>
                       </div>
                     </div>
                   </div>

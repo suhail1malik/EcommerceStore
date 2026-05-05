@@ -18,24 +18,24 @@ const HeroSection = () => {
       {/* Absolute Grid & Mask to seamlessly blend with the body gradient */}
       <div className="absolute inset-0 bg-grid-slate-900 dark:bg-grid-white mask-hero-gradient pointer-events-none opacity-20 dark:opacity-30" />
       
-      {/* Massive Glowing Orbs for the Aurora/Neon effect */}
+      {/* Massive Glowing Orbs for the CommerceHub effect */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none flex justify-center items-center opacity-70">
-        <div className="absolute top-[-20%] left-[10%] w-[40vw] h-[40vw] bg-emerald-400/30 dark:bg-emerald-500/15 rounded-full blur-[120px] mix-blend-multiply dark:mix-blend-screen animate-pulse" style={{ animationDuration: '8s' }} />
-        <div className="absolute bottom-[-10%] right-[10%] w-[35vw] h-[35vw] bg-teal-400/30 dark:bg-teal-500/15 rounded-full blur-[120px] mix-blend-multiply dark:mix-blend-screen animate-pulse" style={{ animationDuration: '12s' }} />
+        <div className="absolute top-[-20%] left-[10%] w-[40vw] h-[40vw] bg-indigo-500/20 dark:bg-indigo-500/10 rounded-full blur-[120px] mix-blend-multiply dark:mix-blend-screen animate-pulse" style={{ animationDuration: '8s' }} />
+        <div className="absolute bottom-[-10%] right-[10%] w-[35vw] h-[35vw] bg-emerald-400/20 dark:bg-emerald-500/10 rounded-full blur-[120px] mix-blend-multiply dark:mix-blend-screen animate-pulse" style={{ animationDuration: '12s' }} />
       </div>
 
       <div className="relative z-10 max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 lg:py-20 grid grid-cols-2 gap-4 lg:gap-14 items-center">
         <div className="max-w-xl">
-          <span className="inline-block bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-bold px-3 py-1 rounded-full text-xs tracking-wider mb-5">
-            NEW SEASON
+          <span className="inline-block bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 font-bold px-3 py-1 rounded-full text-[10px] sm:text-xs tracking-widest mb-5 uppercase">
+            Elevate Your Experience
           </span>
-          <h1 className="text-2xl sm:text-5xl lg:text-5xl xl:text-7xl font-extrabold tracking-tight mb-3 sm:mb-5 text-slate-900 dark:text-white leading-[1.05]">
-            Find gear you <span className="relative inline-block"><span className="relative z-10 text-emerald-500 drop-shadow-[0_0_15px_rgba(16,185,129,0.5)]">love</span></span> at 
-            <span className="bg-gradient-to-r from-slate-700 to-slate-500 dark:from-white dark:to-slate-400 bg-clip-text text-transparent"> unbeatable prices</span>
+          <h1 className="text-3xl sm:text-5xl lg:text-5xl xl:text-7xl font-extrabold tracking-tight mb-4 sm:mb-6 text-slate-900 dark:text-white leading-[1.1]">
+            SMART SHOPPING <br />
+            <span className="bg-gradient-to-r from-indigo-600 via-emerald-500 to-teal-500 bg-clip-text text-transparent">STARTS HERE</span>
           </h1>
-          <p className="text-xs sm:text-lg text-slate-600 dark:text-slate-300 mb-4 sm:mb-8 max-w-prose leading-relaxed">
-            Explore top-rated products, fresh arrivals, and exclusive deals.
-            Start your search or browse categories below.
+          <p className="text-sm sm:text-lg text-slate-600 dark:text-slate-300 mb-6 sm:mb-10 max-w-prose leading-relaxed">
+            Discover top-rated products, fresh arrivals, and curated collections.
+            <span className="block mt-2 font-bold text-slate-900 dark:text-indigo-400">All in one place — CommerceHub</span>
           </p>
 
           {/* Desktop Search Form */}

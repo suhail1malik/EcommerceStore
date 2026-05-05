@@ -168,9 +168,9 @@ const Navigation = () => {
         <div className="flex items-center gap-4 text-slate-800 dark:text-white shrink-0">
           <Link
             to="/"
-            className="font-semibold text-2xl tracking-tight text-slate-900 dark:text-white hover:text-emerald-500 dark:hover:text-emerald-400 transition"
+            className="font-extrabold text-2xl tracking-tight text-slate-900 dark:text-white hover:opacity-80 transition-all flex items-center gap-1"
           >
-            E-Store
+            Commerce<span className="bg-gradient-to-r from-indigo-500 to-emerald-500 bg-clip-text text-transparent">Hub</span>
           </Link>
 
           <button

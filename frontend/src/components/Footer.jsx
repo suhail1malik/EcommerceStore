@@ -15,11 +15,11 @@ const Footer = () => {
           <div className="lg:col-span-5 space-y-8">
             <div className="space-y-6">
               <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tighter flex items-center gap-2">
-                <span className="w-9 h-9 bg-emerald-500 rounded-xl flex items-center justify-center text-white text-lg italic font-serif">M</span>
-                MIDNIGHT<span className="text-emerald-500">NEON</span>
+                <span className="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center text-white text-lg font-bold">C</span>
+                Commerce<span className="text-indigo-600">Hub</span>
               </h2>
               <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 leading-relaxed max-w-sm">
-                Redefining the digital shopping experience with curated luxury and neon-infused aesthetics. Join our elite circle for early access.
+                The ultimate destination for smart shopping. Discover curated collections, top-rated products, and seamless shopping experience - all in one place.
               </p>
             </div>
 
@@ -100,7 +100,7 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="mt-20 pt-8 border-t border-slate-200 dark:border-slate-800 flex flex-col md:flex-row items-center justify-between gap-8">
           <p className="text-[11px] font-bold uppercase tracking-widest text-slate-600 dark:text-slate-400 text-center md:text-left">
-            &copy; {new Date().getFullYear()} Midnight Neon Store. Engineered for the Elite.
+            &copy; {new Date().getFullYear()} CommerceHub. All Rights Reserved.
           </p>
           <div className="flex items-center gap-8 text-slate-400 dark:text-slate-600">
             <FaCcVisa size={32} className="grayscale hover:grayscale-0 transition-all cursor-pointer opacity-70 hover:opacity-100" />

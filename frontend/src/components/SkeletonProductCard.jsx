@@ -2,25 +2,23 @@ import React from 'react';
 
 const SkeletonProductCard = () => {
   return (
-    <div className="w-[18rem] p-4 bg-white dark:bg-[#1a1a1a] rounded shadow-md mx-auto animate-pulse">
+    <div className="w-full flex flex-col premium-card rounded-[24px] overflow-hidden animate-pulse">
       {/* Image Skeleton */}
-      <div className="w-full h-[200px] bg-gray-300 dark:bg-slate-700 rounded mb-4" />
+      <div className="aspect-square bg-slate-200 dark:bg-slate-800/50 w-full" />
       
-      {/* Title Skeleton */}
-      <div className="h-6 bg-gray-300 dark:bg-slate-700 rounded w-3/4 mb-4" />
-      
-      {/* Price Skeleton */}
-      <div className="flex justify-between items-center mb-4">
-        <div className="h-6 bg-gray-300 dark:bg-slate-700 rounded w-1/3" />
-        <div className="h-4 bg-gray-300 dark:bg-slate-700 rounded w-1/4" />
+      {/* Content */}
+      <div className="p-4 flex flex-col gap-3">
+        <div className="h-2 w-16 bg-slate-200 dark:bg-slate-800/50 rounded-full" />
+        <div className="h-4 w-3/4 bg-slate-200 dark:bg-slate-800/50 rounded-lg" />
+        
+        <div className="flex justify-between items-center mt-2">
+          <div className="h-6 w-20 bg-slate-200 dark:bg-slate-800/50 rounded-lg" />
+          <div className="h-4 w-10 bg-slate-200 dark:bg-slate-800/50 rounded-lg" />
+        </div>
+
+        {/* Action button skeleton */}
+        <div className="h-10 w-full bg-slate-100 dark:bg-slate-800/30 rounded-xl mt-2" />
       </div>
-      
-      {/* Description Skeleton */}
-      <div className="h-4 bg-gray-300 dark:bg-slate-700 rounded w-full mb-2" />
-      <div className="h-4 bg-gray-300 dark:bg-slate-700 rounded w-5/6 mb-4" />
-      
-      {/* Button Skeleton */}
-      <div className="h-10 bg-gray-300 dark:bg-slate-700 rounded w-full mt-4" />
     </div>
   );
 };

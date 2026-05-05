@@ -17,7 +17,7 @@ const ForgotPassword = () => {
     }
     
     try {
-      const res = await forgotPassword({ email }).unwrap();
+      const res = await forgotPassword({ email: email.trim() }).unwrap();
       toast.success(res.message || "Reset link sent to your email!");
       setEmail("");
     } catch (err) {

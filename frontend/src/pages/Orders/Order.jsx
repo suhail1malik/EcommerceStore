@@ -8,7 +8,7 @@ import { generateInvoicePDF } from "../../utils/invoiceGenerator";
 import Message from "../../components/Message";
 import Loader from "../../components/Loader";
 import RazorpayPayment from "../../components/RazorpayPayment";
-import OrderStepper from "../../components/OrderStepper";
+import OrderTimeline from "../../components/OrderTimeline";
 
 import {
   useDeliverOrderMutation,
@@ -155,88 +155,85 @@ const Order = () => {
     }
   };
 
-  return (
-    <div className="container mx-auto px-4 py-8">
+  return     <div className="container mx-auto px-4 py-8 min-h-screen">
       {/* Visual Tracking Stepper */}
-      <div className="mb-8 bg-white dark:bg-slate-800 rounded-lg shadow-md p-4 sm:p-6">
-        <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-2 gap-2">
-          <h2 className="text-xl font-semibold text-gray-800 dark:text-slate-100">Order Tracking</h2>
+      <div className="mb-8 premium-card rounded-[32px] p-8 sm:p-10">
+        <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-6 gap-2">
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-slate-100 italic font-serif">Logistics Progress</h2>
           {order?.estimatedDeliveryDate && (
-             <p className="text-sm text-gray-600 dark:text-gray-300">
-               Est. Delivery: <span className="font-semibold text-emerald-600 dark:text-emerald-400">{new Date(order.estimatedDeliveryDate).toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric' })}</span>
+             <p className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+               Arrival Window: <span className="text-emerald-500">{new Date(order.estimatedDeliveryDate).toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric' })}</span>
              </p>
           )}
         </div>
         <div className="mt-2">
-          <OrderStepper order={order} />
+          <OrderTimeline 
+            isPaid={order.isPaid}
+            isPacked={order.isPacked}
+            isShipped={order.isShipped}
+            isOutForDelivery={order.isOutForDelivery}
+            isDelivered={order.isDelivered}
+            isCancelled={order.isCancelled}
+            paidAt={order.paidAt}
+            packedAt={order.packedAt}
+            shippedAt={order.shippedAt}
+            outForDeliveryAt={order.outForDeliveryAt}
+            deliveredAt={order.deliveredAt}
+            createdAt={order.createdAt}
+          />
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-8">
+      <div className="flex flex-col lg:flex-row gap-10">
         {/* Left Column - Items + Shipping */}
-        <div className="lg:w-2/3 space-y-6">
+        <div className="lg:w-2/3 space-y-10">
           {/* Order Items */}
-          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md overflow-hidden">
-            <div className="bg-gray-50 dark:bg-slate-900 px-6 py-4 border-b border-slate-200 dark:border-slate-700">
-              <h2 className="text-xl font-semibold text-gray-800 dark:text-slate-100">
-                Order Items
+          <div className="premium-card rounded-[32px] overflow-hidden">
+            <div className="px-8 py-6 border-b border-slate-200 dark:border-slate-700/50 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/50">
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white italic font-serif">
+                Manifest Details
               </h2>
+              <span className="text-xs font-bold uppercase tracking-widest text-slate-400">{order?.orderItems?.length} Units</span>
             </div>
-            <div className="p-6">
+            <div className="p-0">
               {order?.orderItems?.length === 0 ? (
-                <Message>Order is empty</Message>
+                <div className="p-10 text-center"><Message>Order is empty</Message></div>
               ) : (
-                <div className="space-y-4">
+                <div className="divide-y divide-slate-100 dark:divide-slate-800/50">
                   {order.orderItems.map((item, index) => (
                     <div
                       key={index}
-                      className="flex flex-col sm:flex-row items-center p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-slate-900 transition-colors"
+                      className="flex flex-col sm:flex-row items-center p-8 gap-8 group"
                     >
-                      <div className="flex-shrink-0 mb-4 sm:mb-0 sm:mr-6">
+                      <div className="flex-shrink-0 relative overflow-hidden rounded-2xl w-24 h-24 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700/50">
                         <img
                           src={getImageSource(item.image)}
                           alt={item.name || `item-${index}`}
-                          className="w-20 h-20 object-cover rounded-lg"
-                          loading="lazy"
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src =
-                              "https://via.placeholder.com/80x80/374151/9ca3af?text=No+Image";
-                          }}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                         />
                       </div>
 
                       <div className="flex-grow text-center sm:text-left">
                         <Link
                           to={`/product/${item.product}`}
-                          className="text-lg font-medium text-emerald-600 dark:text-emerald-500 hover:text-emerald-800 dark:hover:text-emerald-400 transition-colors"
+                          className="text-lg font-bold text-slate-900 dark:text-white hover:text-emerald-600 transition-colors"
                         >
                           {item.name}
                         </Link>
 
-                        <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm">
-                          <div>
-                            <p className="text-gray-500 dark:text-slate-300">
-                              Quantity
-                            </p>
-                            <p className="font-medium">{item.qty}</p>
-                          </div>
-                          <div>
-                            <p className="text-gray-500 dark:text-slate-300">
-                              Unit Price
-                            </p>
-                            <p className="font-medium">
-                              {formatCurrency(item.price)}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-gray-500 dark:text-slate-300">
-                              Total
-                            </p>
-                            <p className="font-medium">
-                              {formatCurrency(item.qty * item.price)}
-                            </p>
-                          </div>
+                        <div className="mt-4 flex items-center justify-center sm:justify-start gap-8">
+                           <div>
+                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Qty</p>
+                             <p className="font-extrabold text-slate-900 dark:text-slate-100">{item.qty}</p>
+                           </div>
+                           <div>
+                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Val</p>
+                             <p className="font-extrabold text-slate-900 dark:text-slate-100">{formatCurrency(item.price)}</p>
+                           </div>
+                           <div>
+                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Row</p>
+                             <p className="font-extrabold text-emerald-600 dark:text-emerald-400">{formatCurrency(item.qty * item.price)}</p>
+                           </div>
                         </div>
                       </div>
                     </div>
@@ -247,90 +244,57 @@ const Order = () => {
           </div>
 
           {/* Shipping Info */}
-          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md overflow-hidden">
-            <div className="bg-gray-50 dark:bg-slate-900 px-6 py-4 border-b border-slate-200 dark:border-slate-700">
-              <h2 className="text-xl font-semibold text-gray-800 dark:text-slate-100">
-                Shipping Information
+          <div className="premium-card rounded-[32px] overflow-hidden">
+            <div className="px-8 py-6 border-b border-slate-200 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-800/50">
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white italic font-serif">
+                Logistics & Identity
               </h2>
             </div>
-            <div className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <h3 className="text-lg font-medium text-gray-800 dark:text-slate-100 mb-4">
-                    Order Details
-                  </h3>
-                  <div className="space-y-3 text-sm">
-                    <div className="flex">
-                      <span className="text-gray-600 dark:text-slate-300 w-32">
-                        Order ID:
-                      </span>
-                      <span className="font-medium break-words text-slate-800 dark:text-slate-100 font-mono tracking-wider">
-                        ORD-{order._id.substring(18).toUpperCase()}
-                      </span>
+            <div className="p-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                <div className="space-y-6">
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400">Recipient Details</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Terminal ID</p>
+                      <p className="font-bold text-slate-900 dark:text-white font-mono">ORD-{order._id.substring(18).toUpperCase()}</p>
                     </div>
-                    <div className="flex">
-                      <span className="text-gray-600 dark:text-slate-300 w-32">
-                        Name:
-                      </span>
-                      <span className="font-medium">
-                        {order?.user?.username || order?.user?.name || "N/A"}
-                      </span>
+                    <div>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Authenticated Entity</p>
+                      <p className="font-bold text-slate-900 dark:text-white">{order?.user?.username || order?.user?.name || "N/A"}</p>
                     </div>
-                    <div className="flex">
-                      <span className="text-gray-600 dark:text-slate-300 w-32">
-                        Email:
-                      </span>
-                      <span className="font-medium">
-                        {order?.user?.email || "N/A"}
-                      </span>
+                    <div>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Contact Protocol</p>
+                      <p className="font-bold text-slate-900 dark:text-white">{order?.user?.email || "N/A"}</p>
                     </div>
                   </div>
                 </div>
 
-                <div>
-                  <h3 className="text-lg font-medium text-gray-800 dark:text-slate-100 mb-4">
-                    Shipping Address
-                  </h3>
-                  <div className="space-y-3 text-sm">
-                    <div className="flex">
-                      <span className="text-gray-600 dark:text-slate-300 w-32">
-                        Address:
-                      </span>
-                      <span className="font-medium">
+                <div className="space-y-6">
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400">Destination Hub</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Physical Address</p>
+                      <p className="font-bold text-slate-900 dark:text-white">
                         {order?.shippingAddress?.address || "N/A"},{" "}
                         {order?.shippingAddress?.city || ""}{" "}
                         {order?.shippingAddress?.postalCode || ""},{" "}
                         {order?.shippingAddress?.country || ""}
-                      </span>
+                      </p>
                     </div>
-
-                    <div className="flex">
-                      <span className="text-gray-600 dark:text-slate-300 w-32">
-                        Payment Method:
-                      </span>
-                      <span className="font-medium">
-                        {order?.paymentMethod || "N/A"}
-                      </span>
+                    <div>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Settlement Method</p>
+                      <p className="font-bold text-slate-900 dark:text-white">{order?.paymentMethod || "N/A"}</p>
                     </div>
-
-                    <div className="flex">
-                      <span className="text-gray-600 dark:text-slate-300 w-32">
-                        Payment Status:
-                      </span>
-                      <span className="font-medium">
-                        {order?.isPaid ? (
-                          <span className="text-green-600 dark:text-green-300">
-                            Paid on{" "}
-                            {order?.paidAt
-                              ? new Date(order.paidAt).toLocaleDateString()
-                              : "N/A"}
-                          </span>
-                        ) : (
-                          <span className="text-red-600 dark:text-red-300">
-                            Not paid
-                          </span>
-                        )}
-                      </span>
+                    <div>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Financial State</p>
+                      {order?.isPaid ? (
+                        <p className="font-bold text-emerald-500">
+                          Cleared on {new Date(order.paidAt).toLocaleDateString()}
+                        </p>
+                      ) : (
+                        <p className="font-bold text-red-500">Awaiting Settlement</p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -341,60 +305,46 @@ const Order = () => {
 
         {/* Right Column - Summary + Actions */}
         <div className="lg:w-1/3">
-          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md overflow-hidden sticky top-8">
-            <div className="bg-gray-50 dark:bg-slate-900 px-6 py-4 border-b border-slate-200 dark:border-slate-700">
-              <h2 className="text-xl font-semibold text-gray-800 dark:text-slate-100">
-                Order Summary
+          <div className="premium-card rounded-[32px] overflow-hidden sticky top-8 shadow-2xl">
+            <div className="px-8 py-6 border-b border-slate-200 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-800/50">
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white italic font-serif">
+                Fiscal Snapshot
               </h2>
             </div>
 
-            <div className="p-6">
-              <div className="space-y-4 mb-6 text-sm">
+            <div className="p-8">
+              <div className="space-y-5 mb-8 text-slate-600 dark:text-slate-400 font-medium">
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-slate-300">
-                    Items:
-                  </span>
-                  <span className="font-medium">
-                    {formatCurrency(order?.itemsPrice)}
-                  </span>
+                  <span>Gross Inventory</span>
+                  <span className="text-slate-900 dark:text-white font-bold">{formatCurrency(order?.itemsPrice)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-slate-300">
-                    Shipping:
-                  </span>
-                  <span className="font-medium">
-                    {formatCurrency(order?.shippingPrice)}
-                  </span>
+                  <span>Logistics Fee</span>
+                  <span className="text-slate-900 dark:text-white font-bold">{formatCurrency(order?.shippingPrice)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-slate-300">
-                    Tax:
-                  </span>
-                  <span className="font-medium">
-                    {formatCurrency(order?.taxPrice)}
-                  </span>
+                  <span>Estimated Levies</span>
+                  <span className="text-slate-900 dark:text-white font-bold">{formatCurrency(order?.taxPrice)}</span>
                 </div>
 
-                <div className="border-t pt-4 mt-4">
-                  <div className="flex justify-between">
-                    <span className="text-lg font-semibold text-gray-800 dark:text-slate-100">
-                      Total:
-                    </span>
-                    <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
+                <div className="pt-5 border-t border-slate-100 dark:border-slate-800">
+                  <div className="flex justify-between items-center">
+                    <span className="text-lg font-bold text-slate-900 dark:text-white">Total Valuation</span>
+                    <span className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400">
                       {formatCurrency(order?.totalPrice)}
                     </span>
                   </div>
                 </div>
               </div>
 
-              {/* Invoice Download Button (Available for Admin or the buyer) */}
+              {/* Invoice Download Button */}
               <div className="mb-6">
                 <button
                   onClick={generateInvoice}
-                  className="w-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-100 font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors border border-slate-300 dark:border-slate-600 shadow-sm"
+                  className="w-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-900 dark:text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-all border border-slate-200 dark:border-slate-700 shadow-sm"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                  Preview Invoice (PDF)
+                  Generate Invoice PDF
                 </button>
               </div>
 

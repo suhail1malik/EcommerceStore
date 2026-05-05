@@ -156,16 +156,28 @@ const fetchProducts = asyncHandler(async (req, res) => {
 
   const keyword = keywordString
     ? {
-        name: {
-          $regex: keywordString,
-          $options: "i",
-        },
+        $or: [
+          // Exact substring match (highest relevance)
+          { name: { $regex: keywordString, $options: "i" } },
+          { brand: { $regex: keywordString, $options: "i" } },
+          { description: { $regex: keywordString, $options: "i" } },
+          
+          // Split-word match: find if any word in query matches
+          ...keywordString.split(/\s+/).filter(w => w.length > 2).map(word => ({
+             name: { $regex: word, $options: "i" }
+          })),
+
+          // Typo-tolerant: allow characters to be skipped (e.g. "iphne" -> "iphone")
+          // Only apply for words longer than 3 chars to avoid over-matching
+          ...(keywordString.length > 3 ? [{ name: { $regex: keywordString.split("").join(".*"), $options: "i" } }] : [])
+        ]
       }
     : {};
 
   const count = await Product.countDocuments({ ...keyword });
   const products = await Product.find({ ...keyword })
     .lean()
+    .populate("category")
     .skip(pageSize * (page - 1))
     .limit(pageSize);
 
@@ -181,7 +193,9 @@ const fetchProducts = asyncHandler(async (req, res) => {
 });
 
 const fetchProductById = asyncHandler(async (req, res) => {
-  const product = await Product.findById(req.params.id).lean();
+  const product = await Product.findById(req.params.id)
+    .lean()
+    .populate("category");
 
   if (!product) {
     return res.status(404).json({ error: "Product not found" });
@@ -252,7 +266,11 @@ const fetchTopProducts = asyncHandler(async (req, res) => {
     return res.json(cache.get(cacheKey));
   }
 
-  const products = await Product.find({}).lean().sort({ rating: -1 }).limit(4);
+  const products = await Product.find({})
+    .lean()
+    .populate("category")
+    .sort({ rating: -1 })
+    .limit(4);
   cache.set(cacheKey, products);
   res.json(products);
 });
@@ -263,7 +281,11 @@ const fetchNewProducts = asyncHandler(async (req, res) => {
     return res.json(cache.get(cacheKey));
   }
 
-  const products = await Product.find({}).lean().sort({ _id: -1 }).limit(5);
+  const products = await Product.find({})
+    .lean()
+    .populate("category")
+    .sort({ _id: -1 })
+    .limit(5);
   cache.set(cacheKey, products);
   res.json(products);
 });
@@ -275,7 +297,7 @@ const filterProducts = asyncHandler(async (req, res) => {
   if (checked.length > 0) args.category = checked;
   if (radio.length) args.price = { $gte: radio[0], $lte: radio[1] };
 
-  const products = await Product.find(args).lean();
+  const products = await Product.find(args).lean().populate("category");
   res.json(products);
 });
 

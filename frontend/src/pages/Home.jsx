@@ -9,6 +9,8 @@ import CategoryStrip from "../components/CategoryStrip";
 import TopRow from "../components/TopRow";
 import { motion } from "framer-motion";
 
+import SkeletonProductCard from "../components/SkeletonProductCard";
+
 const Home = () => {
   const { keyword } = useParams();
   const { data, isLoading, isError, error } = useGetProductsQuery({ keyword });
@@ -28,7 +30,11 @@ const Home = () => {
         </motion.div>
       )}
       {isLoading ? (
-        <div className="py-20 flex justify-center"><Loader /></div>
+        <div className="w-full px-2 sm:px-4 lg:px-6 py-8 sm:py-16">
+           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 md:gap-5 pb-6 pt-2">
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((n) => <SkeletonProductCard key={n} />)}
+           </div>
+        </div>
       ) : isError ? (
         <div className="max-w-[1400px] mx-auto px-6 py-10">
           <Message variant="error">

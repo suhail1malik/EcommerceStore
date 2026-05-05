@@ -1,4 +1,3 @@
-const TAX_RATE = 0.15;
 const SHIPPING_THRESHOLD = 100;
 const SHIPPING_FLAT = 10;
 
@@ -15,7 +14,14 @@ export const calculateCartTotals = (cartItems = []) => {
   );
 
   const shippingPrice = itemsPrice > SHIPPING_THRESHOLD ? 0 : SHIPPING_FLAT;
-  const taxPrice = addDecimals(TAX_RATE * itemsPrice);
+  
+  // Calculate total tax by summing (price * qty * taxPercentage / 100) for each item
+  const totalTax = (cartItems || []).reduce(
+    (acc, item) => acc + (item.price * item.qty * (item.category?.taxPercentage || item.taxPercentage || 10) / 100),
+    0
+  );
+  
+  const taxPrice = addDecimals(totalTax);
   const totalPrice = addDecimals(itemsPrice + shippingPrice + taxPrice);
 
   return { itemsPrice, shippingPrice, taxPrice, totalPrice };

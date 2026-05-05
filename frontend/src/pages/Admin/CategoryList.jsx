@@ -16,9 +16,11 @@ const CategoryList = () => {
   const { data: categories } = useFetchCategoriesQuery();
   const [name, setName] = useState("");
   const [image, setImage] = useState("");
+  const [taxPercentage, setTaxPercentage] = useState(10);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [updatingName, setUpdatingName] = useState("");
   const [updatingImage, setUpdatingImage] = useState("");
+  const [updatingTaxPercentage, setUpdatingTaxPercentage] = useState(10);
   const [modalVisible, setModalVisible] = useState(false);
 
   const [createCategory] = useCreateCategoryMutation();
@@ -50,12 +52,17 @@ const CategoryList = () => {
     }
 
     try {
-      const result = await createCategory({ name, image }).unwrap();
+      const result = await createCategory({ 
+        name, 
+        image, 
+        taxPercentage: Number(taxPercentage) 
+      }).unwrap();
       if (result.error) {
         toast.error(result.error);
       } else {
         setName("");
         setImage("");
+        setTaxPercentage(10);
         toast.success(`${result.name} is created.`);
       }
     } catch (error) {
@@ -78,6 +85,7 @@ const CategoryList = () => {
         updatedCategory: {
           name: updatingName,
           image: updatingImage,
+          taxPercentage: Number(updatingTaxPercentage),
         },
       }).unwrap();
 
@@ -129,6 +137,8 @@ const CategoryList = () => {
             isUploading={isUploading}
             onImageSelect={(e) => handleFileSelect(e, setImage)}
             handleSubmit={handleCreateCategory}
+            taxValue={taxPercentage}
+            setTaxValue={setTaxPercentage}
           />
         </div>
 
@@ -139,6 +149,7 @@ const CategoryList = () => {
               setSelectedCategory(category);
               setUpdatingName(category.name);
               setUpdatingImage(category.image || "");
+              setUpdatingTaxPercentage(category.taxPercentage || 10);
             }}>
               {category.image ? (
                 <div className="aspect-square rounded-xl overflow-hidden border-2 border-slate-200 dark:border-slate-700 group-hover:border-emerald-500 transition-colors shadow-sm relative">
@@ -175,6 +186,8 @@ const CategoryList = () => {
             handleSubmit={handleUpdateCategory}
             buttonText="Update"
             handleDelete={handleDeleteCategory}
+            taxValue={updatingTaxPercentage}
+            setTaxValue={setUpdatingTaxPercentage}
           />
         </Modal>
       </div>

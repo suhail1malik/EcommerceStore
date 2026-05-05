@@ -3,7 +3,7 @@ import asyncHandler from "../middlewares/asyncHandler.js";
 
 const createCategory = asyncHandler(async (req, res) => {
   try {
-    const { name, image } = req.body;
+    const { name, image, taxPercentage } = req.body;
 
     if (!name) {
       return res.json({ error: "Name is required" });
@@ -15,17 +15,20 @@ const createCategory = asyncHandler(async (req, res) => {
       return res.json({ error: "Already exists" });
     }
 
-    const category = await new Category({ name, image }).save();
+    const category = await new Category({ 
+      name, 
+      image, 
+      taxPercentage: taxPercentage || 10 
+    }).save();
     res.json(category);
   } catch (error) {
-    console.log(error);
     return res.status(400).json(error);
   }
 });
 
 const updateCategory = asyncHandler(async (req, res) => {
   try {
-    const { name, image } = req.body;
+    const { name, image, taxPercentage } = req.body;
     const { categoryId } = req.params;
 
     const category = await Category.findOne({ _id: categoryId });
@@ -37,6 +40,10 @@ const updateCategory = asyncHandler(async (req, res) => {
     category.name = name;
     if (image !== undefined) {
       category.image = image;
+    }
+    
+    if (taxPercentage !== undefined) {
+      category.taxPercentage = taxPercentage;
     }
 
     const updatedCategory = await category.save();
@@ -63,7 +70,6 @@ const listCategory = asyncHandler(async (req, res) => {
     const all = await Category.find({});
     res.json(all);
   } catch (error) {
-    console.log(error);
     return res.status(400).json(error.message);
   }
 });
@@ -73,7 +79,6 @@ const readCategory = asyncHandler(async (req, res) => {
     const category = await Category.findOne({ _id: req.params.id });
     res.json(category);
   } catch (error) {
-    console.log(error);
     return res.status(400).json(error.message);
   }
 });

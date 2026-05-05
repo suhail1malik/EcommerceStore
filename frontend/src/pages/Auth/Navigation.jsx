@@ -11,25 +11,36 @@ import {
 } from "react-icons/ai";
 import { FaHeart } from "react-icons/fa";
 import { GiHamburgerMenu } from "react-icons/gi";
+import { BsSun, BsMoon } from "react-icons/bs";
+import { MdLocationOn } from "react-icons/md";
+import { useGetProductsQuery } from "../../redux/api/productApiSlice";
+import { useDebounce } from "../../hooks/useDebounce";
+import { getImageSource } from "../../utils/images";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { BsMoon, BsSun } from "react-icons/bs";
 import { useTheme } from "../../components/ThemeProvider";
 import { useLogoutMutation } from "../../redux/api/usersApiSlice";
 import { logout } from "../../redux/features/auth/authSlice";
 import FavoritesCount from "../Products/FavoritesCount";
-import { MdLocationOn } from "react-icons/md";
 
 const Navigation = () => {
   const { theme, toggleTheme } = useTheme();
   const { userInfo } = useSelector((state) => state.auth);
   const { cartItems } = useSelector((state) => state.cart);
 
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+
+  const { data: searchData, isFetching: isSearching } = useGetProductsQuery(
+    { keyword: debouncedSearchTerm },
+    { skip: !debouncedSearchTerm || debouncedSearchTerm.length < 2 || !showSuggestions }
+  );
+
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [locationLabel, setLocationLabel] = useState("Your area");
   const [locating, setLocating] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -58,6 +69,7 @@ const Navigation = () => {
 
       setDropdownOpen(false);
       setMobileOpen(false);
+      setShowSuggestions(false);
     }
 
     function handleEsc(e) {
@@ -76,56 +88,12 @@ const Navigation = () => {
     };
   }, []); // <-- attach once (important)
 
-  // Detect and cache user location
+  // Load cached user location if it exists
   useEffect(() => {
     const saved = localStorage.getItem("userLocationLabel");
     if (saved) {
       setLocationLabel(saved);
-      return;
     }
-    if (!("geolocation" in navigator)) return;
-
-    let cancelled = false;
-    setLocating(true);
-
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        if (cancelled) return;
-        try {
-          const { latitude, longitude } = pos.coords;
-          const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`;
-          const res = await fetch(url, {
-            headers: { Accept: "application/json" },
-          });
-          const data = await res.json();
-          const a = data?.address || {};
-          const city =
-            a.city ||
-            a.town ||
-            a.village ||
-            a.suburb ||
-            a.neighbourhood ||
-            a.state ||
-            "Your location";
-          const pincode = a.postcode || "";
-          const label = pincode ? `${city} ${pincode}` : city;
-          setLocationLabel(label);
-          localStorage.setItem("userLocationLabel", label);
-        } catch (err) {
-          console.log("error in location", err);
-        } finally {
-          if (!cancelled) setLocating(false);
-        }
-      },
-      () => {
-        if (!cancelled) setLocating(false);
-      },
-      { timeout: 6000 }
-    );
-
-    return () => {
-      cancelled = true;
-    };
   }, []);
 
   const logoutHandler = async () => {
@@ -141,17 +109,20 @@ const Navigation = () => {
   const submitSearch = (e) => {
     e?.preventDefault();
     const q = searchTerm.trim();
-    if (q) navigate(`/shop?search=${encodeURIComponent(q)}`);
-    else navigate("/shop");
+    if (q) {
+      navigate(`/shop?search=${encodeURIComponent(q)}`);
+      setShowSuggestions(false);
+    } else {
+      navigate("/shop");
+    }
     setMobileOpen(false);
   };
 
-  const clearLocation = () => {
-    localStorage.removeItem("userLocationLabel");
-    setLocationLabel("Your area");
+  const detectLocation = () => {
     setLocating(true);
     if (!("geolocation" in navigator)) {
       setLocating(false);
+      alert("Geolocation is not supported by your browser.");
       return;
     }
     navigator.geolocation.getCurrentPosition(
@@ -180,8 +151,12 @@ const Navigation = () => {
           .catch(() => {})
           .finally(() => setLocating(false));
       },
-      () => setLocating(false),
-      { timeout: 6000 }
+      (error) => {
+        console.error("Location error:", error);
+        setLocating(false);
+        alert("Failed to detect location. Please check permissions.");
+      },
+      { timeout: 8000 }
     );
   };
 
@@ -200,7 +175,7 @@ const Navigation = () => {
 
           <button
             title="Detect location"
-            onClick={clearLocation}
+            onClick={detectLocation}
             aria-label="Detect location"
             className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-md bg-slate-200 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 text-sm hover:bg-slate-300 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white transition"
           >
@@ -227,10 +202,10 @@ const Navigation = () => {
               <span className="hidden sm:inline font-medium">Shop</span>
             </Link>
 
-            {userInfo && !userInfo.isAdmin && (
+            {userInfo && (
               <Link
-                to="/user-orders"
-                className={`flex items-center gap-2 transition-colors ${location.pathname === '/user-orders' ? 'text-emerald-500 font-semibold' : 'hover:text-emerald-400'}`}
+                to="/my-orders"
+                className={`flex items-center gap-2 transition-colors ${location.pathname === '/my-orders' ? 'text-emerald-500 font-semibold' : 'hover:text-emerald-400'}`}
                 aria-label="My Orders"
               >
                 <AiOutlineShopping className="text-xl" />
@@ -250,6 +225,55 @@ const Navigation = () => {
               <span className="hidden sm:inline font-medium">Favorites</span>
             </Link>
           </div>
+        </div>
+
+        {/* Center: Desktop Search */}
+        <div className="hidden lg:flex flex-1 max-w-md mx-4">
+           <form onSubmit={submitSearch} className="relative w-full group">
+              <AiOutlineSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setShowSuggestions(true);
+                }}
+                placeholder="Search premium goods..."
+                className="w-full pl-11 pr-4 py-2 bg-slate-100 dark:bg-slate-800/50 border border-transparent focus:border-emerald-500 focus:bg-white dark:focus:bg-slate-900 rounded-full text-sm outline-none transition-all"
+              />
+              {/* Desktop Predictive Dropdown */}
+              {debouncedSearchTerm && showSuggestions && (searchData?.products?.length > 0 || isSearching) && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl overflow-hidden z-[60]">
+                   {isSearching ? (
+                     <div className="p-4 text-center text-xs text-slate-500">Searching...</div>
+                   ) : (
+                     <div className="max-h-[400px] overflow-y-auto py-2">
+                        {searchData.products.slice(0, 5).map(p => (
+                          <Link 
+                            key={p._id} 
+                            to={`/product/${p._id}`} 
+                            onClick={() => {
+                              setSearchTerm("");
+                              setShowSuggestions(false);
+                            }}
+                            className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-b border-slate-50 dark:border-slate-800/50 last:border-0"
+                          >
+                             <img src={getImageSource(p.image)} alt={p.name} className="w-10 h-10 rounded-lg object-cover bg-slate-100" />
+                             <div className="flex-1 overflow-hidden">
+                                <p className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">{p.name}</p>
+                                <p className="text-[10px] text-emerald-500 font-bold uppercase tracking-widest">{p.brand}</p>
+                             </div>
+                             <p className="text-sm font-black text-slate-900 dark:text-white">₹{p.price}</p>
+                          </Link>
+                        ))}
+                        <Link to={`/shop?keyword=${debouncedSearchTerm}`} className="block text-center py-2 text-xs font-bold text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 transition-colors">
+                           View All Results →
+                        </Link>
+                     </div>
+                   )}
+                </div>
+              )}
+           </form>
         </div>
 
         {/* Right: actions */}
@@ -290,7 +314,15 @@ const Navigation = () => {
                 aria-expanded={dropdownOpen}
                 aria-label="User menu"
               >
-                <span className="hidden sm:inline">{userInfo.username}</span>
+                {userInfo.profilePic ? (
+                  <img 
+                    src={userInfo.profilePic} 
+                    alt="Profile" 
+                    className="w-8 h-8 rounded-full object-cover border border-emerald-500/20" 
+                  />
+                ) : (
+                  <span className="hidden sm:inline">{userInfo.username}</span>
+                )}
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className={`h-4 w-4 transition-transform duration-200 ${
@@ -370,6 +402,14 @@ const Navigation = () => {
                   )}
                   <li>
                     <Link
+                      to="/my-orders"
+                      className="block px-4 py-2 hover:bg-gray-800"
+                    >
+                      My Orders
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
                       to="/profile"
                       className="block px-4 py-2 hover:bg-gray-800"
                     >
@@ -434,14 +474,58 @@ const Navigation = () => {
             <input
               type="search"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search for brands and products"
-              className="w-full pl-11 pr-4 py-2.5 bg-slate-100/90 dark:bg-slate-800/60 backdrop-blur-sm border border-transparent focus:border-emerald-500 focus:bg-white dark:focus:bg-slate-900 rounded-full text-[15px] text-slate-900 dark:text-gray-100 placeholder:text-slate-500 dark:placeholder:text-gray-400 outline-none transition-all shadow-inner"
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setShowSuggestions(true);
+              }}
+              placeholder="Search specific item..."
+              className="w-full pl-11 pr-11 py-2.5 bg-slate-100/90 dark:bg-slate-800/60 backdrop-blur-sm border border-transparent focus:border-emerald-500 focus:bg-white dark:focus:bg-slate-900 rounded-full text-[15px] text-slate-900 dark:text-gray-100 placeholder:text-slate-500 dark:placeholder:text-gray-400 outline-none transition-all shadow-inner"
             />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => setSearchTerm("")}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-emerald-500 transition-colors p-1 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700"
+              >
+                <AiOutlineClose size={14} />
+              </button>
+            )}
+            {/* Mobile Predictive Dropdown */}
+            {debouncedSearchTerm && showSuggestions && (searchData?.products?.length > 0 || isSearching) && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl overflow-hidden z-[60]">
+                 {isSearching ? (
+                   <div className="p-4 text-center text-xs text-slate-500 font-medium">Seeking products...</div>
+                 ) : (
+                   <div className="max-h-[300px] overflow-y-auto py-1">
+                      {searchData.products.slice(0, 4).map(p => (
+                        <Link 
+                          key={p._id} 
+                          to={`/product/${p._id}`} 
+                          onClick={() => {
+                            setSearchTerm("");
+                            setShowSuggestions(false);
+                          }}
+                          className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-b border-slate-50 dark:border-slate-800/50 last:border-0"
+                        >
+                           <img src={getImageSource(p.image)} alt={p.name} className="w-10 h-10 rounded-lg object-cover bg-slate-100" />
+                           <div className="flex-1 overflow-hidden">
+                              <p className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">{p.name}</p>
+                              <p className="text-[10px] text-emerald-500 font-bold">{p.brand}</p>
+                           </div>
+                           <p className="text-xs font-bold text-slate-900 dark:text-white">₹{p.price}</p>
+                        </Link>
+                      ))}
+                      <Link to={`/shop?keyword=${debouncedSearchTerm}`} onClick={() => setSearchTerm("")} className="block text-center py-3 text-xs font-bold text-emerald-500 bg-emerald-50/50 dark:bg-emerald-500/5">
+                         All Results ({searchData.products.length})
+                      </Link>
+                   </div>
+                 )}
+              </div>
+            )}
           </div>
           <button 
             type="submit" 
-            className="w-10 h-10 shrink-0 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full flex items-center justify-center shadow-md transition-colors"
+            className="w-10 h-10 shrink-0 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full flex items-center justify-center shadow-md transition-all active:scale-90"
             aria-label="Search"
           >
             <AiOutlineSearch size={20} />
@@ -470,6 +554,11 @@ const Navigation = () => {
             <Link to="/cart" className="flex items-center gap-2">
               <AiOutlineShoppingCart className="text-lg" /> Cart
             </Link>
+            {userInfo && (
+              <Link to="/my-orders" className="flex items-center gap-2">
+                <AiOutlineShopping className="text-lg" /> My Orders
+              </Link>
+            )}
 
             {userInfo ? (
               <>
@@ -542,15 +631,23 @@ const Navigation = () => {
             </div>
             <span className="text-[10px] font-medium">Cart</span>
           </Link>
-          {userInfo && !userInfo.isAdmin && (
-             <Link to="/user-orders" className={`flex flex-col items-center justify-center gap-1 w-full h-full transition-colors ${location.pathname === '/user-orders' ? 'text-emerald-500 dark:text-emerald-400 font-bold scale-105' : 'text-slate-500 dark:text-slate-400 hover:text-emerald-500 dark:hover:text-emerald-400'}`}>
+          {userInfo && (
+             <Link to="/my-orders" className={`flex flex-col items-center justify-center gap-1 w-full h-full transition-colors ${location.pathname === '/my-orders' ? 'text-emerald-500 dark:text-emerald-400 font-bold scale-105' : 'text-slate-500 dark:text-slate-400 hover:text-emerald-500 dark:hover:text-emerald-400'}`}>
                 <AiOutlineShopping size={20} />
                 <span className="text-[10px] font-medium">Orders</span>
              </Link>
           )}
           {userInfo ? (
             <Link to="/profile" className={`flex flex-col items-center justify-center gap-1 w-full h-full transition-colors ${location.pathname.startsWith('/profile') || location.pathname.startsWith('/admin') ? 'text-emerald-500 dark:text-emerald-400 font-bold scale-105' : 'text-slate-500 dark:text-slate-400 hover:text-emerald-500 dark:hover:text-emerald-400'}`}>
-              <AiOutlineUserAdd size={20} />
+              {userInfo.profilePic ? (
+                <img 
+                  src={userInfo.profilePic} 
+                  alt="Profile" 
+                  className={`w-6 h-6 rounded-full object-cover border ${location.pathname.startsWith('/profile') ? 'border-emerald-500' : 'border-transparent'}`} 
+                />
+              ) : (
+                <AiOutlineUserAdd size={20} />
+              )}
               <span className="text-[10px] font-medium">Profile</span>
             </Link>
           ) : (

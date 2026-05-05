@@ -3,6 +3,7 @@ import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { BASE_URL, UPLOAD_URL } from "../../redux/constants";
 
 import Loader from "../../components/Loader";
 import { useProfileMutation } from "../../redux/api/usersApiSlice";
@@ -32,10 +33,6 @@ const Profile = () => {
   const location = useLocation();
   const { userInfo } = useSelector((state) => state.auth || {});
 
-  // Determine initial tab from location hash or default to profile
-  const initialTab = location.hash === "#orders" ? "orders" : "profile";
-  const [activeTab, setActiveTab] = useState(initialTab);
-
   // local form state with safe defaults
   const [username, setUserName] = useState(userInfo?.username || "");
   const [email, setEmail] = useState(userInfo?.email || "");
@@ -45,6 +42,14 @@ const Profile = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [uploadingImage, setUploadingImage] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [activeTab, setActiveTab] = useState("profile");
+
+  // Determine initial tab from location hash or default to profile
+  useEffect(() => {
+    if (location.hash === "#orders") setActiveTab("orders");
+    else if (location.hash === "#addresses") setActiveTab("addresses");
+    else if (location.hash === "#profile") setActiveTab("profile");
+  }, [location.hash]);
 
   // inline validation errors
   const [errors, setErrors] = useState({});
@@ -60,10 +65,16 @@ const Profile = () => {
 
     try {
       setUploadingImage(true);
-      const res = await fetch("/api/upload", {
+      const res = await fetch(`${BASE_URL}${UPLOAD_URL}`, {
         method: "POST",
         body: formData,
       });
+      
+      const contentType = res.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("Server did not return JSON. Please check server status.");
+      }
+
       const data = await res.json();
       
       if (!res.ok) {

@@ -2,6 +2,9 @@ import Order from "../models/orderModel.js";
 import Product from "../models/productModel.js";
 import User from "../models/userModel.js";
 import sendEmail from "../utils/sendEmail.js";
+import NodeCache from "node-cache";
+
+const cache = new NodeCache({ stdTTL: 60 * 10 }); // 10 minute cache for analytics
 
 // Utility Function
 function calcPrices(orderItems) {
@@ -11,8 +14,14 @@ function calcPrices(orderItems) {
   );
 
   const shippingPrice = itemsPrice > 100 ? 0 : 10;
-  const taxRate = 0.15;
-  const taxPrice = (itemsPrice * taxRate).toFixed(2);
+  
+  // Calculate total tax by summing (price * qty * taxPercentage / 100) for each item
+  const totalTax = orderItems.reduce(
+    (acc, item) => acc + (item.price * item.qty * (item.taxPercentage || 10) / 100),
+    0
+  );
+  
+  const taxPrice = totalTax.toFixed(2);
 
   const totalPrice = (
     itemsPrice +
@@ -38,7 +47,7 @@ const createOrder = async (req, res) => {
 
     const itemsFromDB = await Product.find({
       _id: { $in: orderItems.map((x) => x._id) },
-    });
+    }).populate("category");
 
     let dbOrderItems = [];
     for (const itemFromClient of orderItems) {
@@ -58,6 +67,7 @@ const createOrder = async (req, res) => {
         ...itemFromClient,
         product: itemFromClient._id,
         price: matchingItemFromDB.price,
+        taxPercentage: matchingItemFromDB.category?.taxPercentage || 10,
         _id: undefined,
       });
     }
@@ -105,6 +115,7 @@ const createOrder = async (req, res) => {
       console.error("Failed to dispatch order confirmation email: ", error);
     }
 
+    cache.flushAll(); // Clear analytics cache on new order
     res.status(201).json(createdOrder);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -132,6 +143,11 @@ const countTotalOrders = async (req, res) => {
 
 const calculateTotalSales = async (req, res) => {
   try {
+    const cacheKey = "totalSales";
+    if (cache.has(cacheKey)) {
+      return res.json({ totalSales: cache.get(cacheKey) });
+    }
+
     const totalSalesData = await Order.aggregate([
       {
         $group: {
@@ -141,6 +157,8 @@ const calculateTotalSales = async (req, res) => {
       },
     ]);
     const totalSales = totalSalesData.length > 0 ? totalSalesData[0].totalSales : 0;
+    
+    cache.set(cacheKey, totalSales);
     res.json({ totalSales });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -149,6 +167,11 @@ const calculateTotalSales = async (req, res) => {
 
 const calcualteTotalSalesByDate = async (req, res) => {
   try {
+    const cacheKey = "salesByDate";
+    if (cache.has(cacheKey)) {
+      return res.json(cache.get(cacheKey));
+    }
+
     const salesByDate = await Order.aggregate([
       {
         $match: {
@@ -163,8 +186,10 @@ const calcualteTotalSalesByDate = async (req, res) => {
           totalSales: { $sum: "$totalPrice" },
         },
       },
+      { $sort: { _id: 1 } } // Ensure chronological order
     ]);
 
+    cache.set(cacheKey, salesByDate);
     res.json(salesByDate);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -216,6 +241,7 @@ const markOrderAsPaid = async (req, res) => {
       }
 
       const updateOrder = await order.save();
+      cache.flushAll(); // Flush cache on payment
       res.status(200).json(updateOrder);
     } else {
       res.status(404);

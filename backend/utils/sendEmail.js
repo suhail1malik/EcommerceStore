@@ -20,8 +20,14 @@ const sendEmail = async (options) => {
     html: options.html, // Optional HTML fallback
   };
 
-  const info = await transporter.sendMail(message);
-  console.log("Email sent: %s", info.messageId);
+  try {
+    const info = await transporter.sendMail(message);
+    console.log("Email sent successfully: %s", info.messageId);
+    return info;
+  } catch (error) {
+    console.error("Critical Email Transmission Error:", error);
+    throw error;
+  }
 };
 
 export default sendEmail;

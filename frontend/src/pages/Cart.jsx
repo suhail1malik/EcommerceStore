@@ -2,7 +2,8 @@ import React, { useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { FaTrash, FaArrowRight, FaLock } from "react-icons/fa";
-import { addToCart, removeFromCart } from "../redux/features/cart/cartSlice";
+import { addToCart, removeFromCart, clearImmediateCheckout } from "../redux/features/cart/cartSlice";
+import { calculateCartTotals } from "../utils/cartUtils";
 import getImageSource from "../utils/images";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -20,15 +21,13 @@ const Cart = () => {
   };
 
   const { itemsPrice, shippingPrice, taxPrice, totalPrice } = useMemo(() => {
-    const itemsPrice = cartItems.reduce(
-      (acc, item) => acc + (item.price || 0) * (item.qty || 0),
-      0
-    );
-    const shippingPrice = itemsPrice > 100 ? 0 : 10;
-    const taxPrice = 0.15 * itemsPrice;
-    const totalPrice = itemsPrice + shippingPrice + taxPrice;
-    return { itemsPrice, shippingPrice, taxPrice, totalPrice };
+    return calculateCartTotals(cartItems);
   }, [cartItems]);
+
+  const checkoutHandler = () => {
+    dispatch(clearImmediateCheckout());
+    navigate("/shipping");
+  };
 
   return (
     <motion.div 
@@ -173,7 +172,7 @@ const Cart = () => {
 
                 <div className="space-y-4">
                   <button
-                    onClick={() => navigate("/shipping")}
+                    onClick={checkoutHandler}
                     className="w-full flex items-center justify-center gap-3 py-4 bg-gray-900 dark:bg-emerald-600 text-white font-bold uppercase tracking-widest text-sm rounded-xl hover:bg-gray-800 dark:hover:bg-emerald-700 hover:-translate-y-1 transition-all active:scale-95 shadow-xl"
                   >
                     <FaLock /> Check Out

@@ -18,6 +18,7 @@ const initialState = {
   shippingPrice: cartFromStorage.shippingPrice || 0,
   taxPrice: cartFromStorage.taxPrice || 0,
   totalPrice: cartFromStorage.totalPrice || 0,
+  immediateCheckoutItem: null, // For "Buy Now" flow
 };
 
 const cartSlice = createSlice({
@@ -77,6 +78,14 @@ const cartSlice = createSlice({
       persistCart(initialState);
       return { ...initialState };
     },
+
+    setImmediateCheckoutItem: (state, action) => {
+      state.immediateCheckoutItem = action.payload;
+    },
+
+    clearImmediateCheckout: (state) => {
+      state.immediateCheckoutItem = null;
+    },
   },
 });
 
@@ -87,6 +96,8 @@ export const {
   saveShippingAddress,
   clearCartItems,
   resetCart,
+  setImmediateCheckoutItem,
+  clearImmediateCheckout,
 } = cartSlice.actions;
 
 export default cartSlice.reducer;

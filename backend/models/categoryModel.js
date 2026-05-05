@@ -11,6 +11,10 @@ const  categorySchema = new mongoose.Schema({
   image: {
     type: String,
   },
+  taxPercentage: {
+    type: Number,
+    default: 10,
+  },
 })
 
 export default mongoose.model("Category", categorySchema);

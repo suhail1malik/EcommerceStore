@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { savePaymentMethod } from "../../redux/features/cart/cartSlice";
 import ProgressSteps from "../../components/ProgressSteps";
+import { FaArrowRight } from "react-icons/fa";
 
 const Payment = () => {
   const dispatch = useDispatch();
@@ -28,58 +29,84 @@ const Payment = () => {
   };
 
   return (
-    <div className="container mx-auto mt-8 px-4">
-      <ProgressSteps step1 step2 step3 />
-      <div className="mt-8 flex justify-center">
+    <div className="container mx-auto px-4 py-6 sm:py-10 min-h-screen">
+      <div className="max-w-3xl mx-auto">
+        <ProgressSteps step1 step2 step3 />
+        
         <form
           onSubmit={submitHandler}
-          className="w-full max-w-2xl bg-white dark:bg-slate-800 rounded-lg shadow-md p-6"
+          className="mt-8 sm:mt-12 w-full premium-card rounded-[24px] sm:rounded-[32px] p-6 sm:p-12"
           aria-label="Payment form"
         >
-          <h1 className="text-2xl font-semibold mb-6 text-gray-900 dark:text-slate-100">
-            Payment Method
-          </h1>
+          <div className="mb-8 sm:mb-10 text-center sm:text-left">
+            <h1 className="text-2xl sm:text-4xl font-extrabold text-gray-900 dark:text-white mb-2 italic font-serif">
+              Payment Gateway
+            </h1>
+            <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 font-medium">Select your preferred method of settlement.</p>
+          </div>
 
-          <fieldset className="mb-6">
-            <legend className="text-gray-700 dark:text-slate-200 mb-4 font-medium">
-              Select Payment Method
+          <fieldset className="mb-8 sm:mb-10">
+            <legend className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-4 sm:mb-6 ml-1">
+              Available Channels
             </legend>
 
-            <div className="flex flex-col space-y-4 pt-2">
-              <label className="inline-flex items-center text-gray-800 dark:text-slate-100 p-4 border border-slate-200 dark:border-slate-700 rounded cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 transition">
+            <div className="grid grid-cols-1 gap-4 sm:gap-5">
+              <label className={`flex items-center gap-3 sm:gap-4 p-4 sm:p-5 border-2 rounded-2xl sm:rounded-[24px] cursor-pointer transition-all duration-300 ${
+                paymentMethod === "Razorpay" 
+                  ? "border-emerald-500 bg-emerald-500/5 shadow-lg shadow-emerald-500/10 ring-4 ring-emerald-500/5" 
+                  : "border-slate-200 dark:border-slate-800/50 bg-slate-50/50 dark:bg-slate-900/50 hover:border-emerald-300 dark:hover:border-emerald-800"
+              }`}>
+                <div className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
+                  paymentMethod === "Razorpay" ? "border-emerald-500 bg-emerald-500" : "border-slate-300 dark:border-slate-700"
+                }`}>
+                  {paymentMethod === "Razorpay" && <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-white" />}
+                </div>
                 <input
                   type="radio"
                   name="paymentMethod"
                   value="Razorpay"
                   checked={paymentMethod === "Razorpay"}
                   onChange={(e) => setPaymentMethod(e.target.value)}
-                  className="form-radio text-emerald-600 dark:text-emerald-500 focus:ring-emerald-500 h-5 w-5"
-                  aria-checked={paymentMethod === "Razorpay"}
+                  className="hidden"
                 />
-                <span className="ml-3 font-medium">Razorpay (UPI, Cards, Net Banking)</span>
+                <div className="flex-1">
+                  <span className="block text-sm sm:text-base font-bold text-slate-900 dark:text-white leading-tight">Secure Digital Checkout</span>
+                  <span className="block text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">Razorpay: Cards, UPI, Net Banking</span>
+                </div>
               </label>
 
-              <label className="inline-flex items-center text-gray-800 dark:text-slate-100 p-4 border border-slate-200 dark:border-slate-700 rounded cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 transition">
+              <label className={`flex items-center gap-3 sm:gap-4 p-4 sm:p-5 border-2 rounded-2xl sm:rounded-[24px] cursor-pointer transition-all duration-300 ${
+                paymentMethod === "CashOnDelivery" 
+                  ? "border-emerald-500 bg-emerald-500/5 shadow-lg shadow-emerald-500/10 ring-4 ring-emerald-500/5" 
+                  : "border-slate-200 dark:border-slate-800/50 bg-slate-50/50 dark:bg-slate-900/50 hover:border-emerald-300 dark:hover:border-emerald-800"
+              }`}>
+                <div className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
+                  paymentMethod === "CashOnDelivery" ? "border-emerald-500 bg-emerald-500" : "border-slate-300 dark:border-slate-700"
+                }`}>
+                  {paymentMethod === "CashOnDelivery" && <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-white" />}
+                </div>
                 <input 
                   type="radio" 
                   name="paymentMethod" 
                   value="CashOnDelivery" 
                   checked={paymentMethod === "CashOnDelivery"} 
                   onChange={(e) => setPaymentMethod(e.target.value)} 
-                  className="form-radio text-emerald-600 dark:text-emerald-500 focus:ring-emerald-500 h-5 w-5"
-                  aria-checked={paymentMethod === "CashOnDelivery"} 
+                  className="hidden"
                 />
-                <span className="ml-3 font-medium">Cash on Delivery (Pay when your order arrives)</span>
+                <div className="flex-1">
+                  <span className="block text-sm sm:text-base font-bold text-slate-900 dark:text-white leading-tight">Fulfillment Settlement</span>
+                  <span className="block text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">Pay upon successful delivery</span>
+                </div>
               </label>
             </div>
           </fieldset>
 
           <button
             type="submit"
-            className="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-3 px-4 rounded-full text-lg mt-4 font-medium transition"
+            className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-4 sm:py-5 px-4 rounded-xl sm:rounded-2xl text-base sm:text-lg font-bold uppercase tracking-widest transition-all shadow-xl shadow-emerald-600/20 active:scale-[0.98] flex items-center justify-center gap-3"
             aria-label="Continue to place order"
           >
-            Continue
+            Review Order <FaArrowRight className="text-sm" />
           </button>
         </form>
       </div>

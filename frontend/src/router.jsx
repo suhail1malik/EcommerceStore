@@ -31,6 +31,10 @@ const PlaceOrder = lazy(() => import("./pages/Orders/PlaceOrder.jsx"));
 const Order = lazy(() => import("./pages/Orders/Order.jsx"));
 const Cart = lazy(() => import("./pages/Cart.jsx"));
 const NotFound = lazy(() => import("./pages/NotFound.jsx"));
+const Privacy = lazy(() => import("./pages/Legal/Privacy.jsx"));
+const Terms = lazy(() => import("./pages/Legal/Terms.jsx"));
+const Contact = lazy(() => import("./pages/Contact.jsx"));
+const MyOrders = lazy(() => import("./pages/User/MyOrders.jsx"));
 
 // Admin pages
 const AdminDashboard = lazy(() => import("./pages/Admin/AdminDashboard.jsx"));
@@ -78,12 +82,14 @@ const routes = createRoutesFromElements(
     <Route path="product/:id" element={<ProductDetails />} />
     <Route path="cart" element={<Cart />} />
     <Route path="shop" element={<Shop />} />
-    <Route path="home" element={<Navigate to="/" replace />} />
-    <Route path="*" element={<NotFound />} />
+    <Route path="privacy" element={<Privacy />} />
+    <Route path="terms" element={<Terms />} />
+    <Route path="contact" element={<Contact />} />
 
     {/* Protected user routes */}
     <Route element={<PrivateRoute />}>
       <Route path="profile" element={<Profile />} />
+      <Route path="my-orders" element={<MyOrders />} />
       <Route path="shipping" element={<Shipping />} />
       <Route path="payment" element={<Payment />} />
       <Route path="placeorder" element={<PlaceOrder />} />
@@ -141,7 +147,7 @@ const routes = createRoutesFromElements(
           }
         />
         <Route
-          path="products/:id/edit"
+          path="product/update/:id"
           element={
             <LazyRouteWrapper>
               <ProductUpdate />
@@ -166,6 +172,7 @@ const routes = createRoutesFromElements(
         />
       </Route>
     </Route>
+    <Route path="*" element={<NotFound />} />
   </Route>
 );
 

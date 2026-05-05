@@ -32,6 +32,8 @@ const createUser = asyncHandler(async (req, res) => {
     username: newUser.username,
     email: newUser.email,
     isAdmin: newUser.isAdmin,
+    profilePic: newUser.profilePic,
+    phone: newUser.phone,
   });
 });
 
@@ -65,6 +67,8 @@ const loginUser = asyncHandler(async (req, res) => {
     username: existingUser.username,
     email: existingUser.email,
     isAdmin: existingUser.isAdmin,
+    profilePic: existingUser.profilePic,
+    phone: existingUser.phone,
   });
 });
 
@@ -93,6 +97,8 @@ const getCurrentUserProfile = asyncHandler(async (req, res) => {
     _id: user._id,
     username: user.username,
     email: user.email,
+    profilePic: user.profilePic,
+    phone: user.phone,
   });
 });
 
@@ -105,6 +111,8 @@ const updateCurrentUserProfile = asyncHandler(async (req, res) => {
 
   user.username = req.body.username || user.username;
   user.email = req.body.email || user.email;
+  user.phone = req.body.phone !== undefined ? req.body.phone : user.phone;
+  user.profilePic = req.body.profilePic !== undefined ? req.body.profilePic : user.profilePic;
 
   if (req.body.password) {
     const salt = await bcrypt.genSalt(10);
@@ -119,6 +127,8 @@ const updateCurrentUserProfile = asyncHandler(async (req, res) => {
     username: updatedUser.username,
     email: updatedUser.email,
     isAdmin: updatedUser.isAdmin,
+    profilePic: updatedUser.profilePic,
+    phone: updatedUser.phone,
   });
 });
 
@@ -172,11 +182,20 @@ import crypto from "crypto";
 import sendEmail from "../utils/sendEmail.js";
 
 const forgotPassword = asyncHandler(async (req, res) => {
-  const user = await User.findOne({ email: req.body.email });
+  const { email } = req.body;
+  
+  if (!email) {
+    res.status(400);
+    throw new Error("Please provide an email address");
+  }
+
+  const user = await User.findOne({ 
+    email: { $regex: new RegExp(`^${email.trim()}$`, "i") } 
+  });
 
   if (!user) {
     res.status(404);
-    throw new Error("There is no user with that email");
+    throw new Error("User with this email not found in our records");
   }
 
   // Generate random token

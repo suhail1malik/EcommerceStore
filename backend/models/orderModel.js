@@ -92,5 +92,9 @@ const orderSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+orderSchema.index({ isPaid: 1 });
+orderSchema.index({ paidAt: 1 });
+orderSchema.index({ createdAt: -1 });
+
 const Order = mongoose.model("Order", orderSchema);
 export default Order;

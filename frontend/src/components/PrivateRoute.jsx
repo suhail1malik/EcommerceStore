@@ -1,11 +1,18 @@
-import {Navigate, Outlet} from 'react-router-dom';
-import {useSelector} from 'react-redux';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import React from 'react';
 
 const PrivateRoute = () => {
-  const {userInfo} = useSelector((state) => state.auth);
-  return userInfo ? <Outlet /> : <Navigate to="/login" replace />;
-}
+  const { userInfo } = useSelector((state) => state.auth);
+  const location = useLocation();
+
+  // Passing the current location to the login page so the user can be redirected back after authentication
+  return userInfo ? (
+    <Outlet />
+  ) : (
+    <Navigate to={`/login?redirect=${location.pathname}${location.search}`} replace />
+  );
+};
 
 export default PrivateRoute;
 // This component checks if the user is authenticated by looking for userInfo in the Redux store.

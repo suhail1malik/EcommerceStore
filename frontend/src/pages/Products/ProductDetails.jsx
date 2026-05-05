@@ -25,7 +25,7 @@ import Ratings from "../Products/Ratings";
 import ProductTabs from "../Products/ProductTabs";
 import SmallProduct from "../Products/SmallProduct";
 import { getImageSource } from "../../utils/images";
-import { addToCart } from "../../redux/features/cart/cartSlice";
+import { addToCart, setImmediateCheckoutItem } from "../../redux/features/cart/cartSlice";
 import { motion } from "framer-motion";
 import { Helmet } from "react-helmet-async";
 
@@ -262,7 +262,7 @@ const ProductDetails = () => {
 
                 <button
                   onClick={() => {
-                    addToCartHandler();
+                    dispatch(setImmediateCheckoutItem({ ...product, qty: Number(qty) }));
                     navigate("/shipping");
                   }}
                   disabled={product.countInStock === 0}
@@ -282,16 +282,7 @@ const ProductDetails = () => {
                     {product.brand}
                   </Link>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-5 flex justify-center text-slate-400 dark:text-slate-500"><FaClock /></span>
-                  <span>Added:</span>{" "}
-                  <span className="text-slate-700 dark:text-slate-300">{createdAt ? formatDistanceToNow(new Date(createdAt), { addSuffix: true }) : "-"}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-5 flex justify-center text-slate-400 dark:text-slate-500"><FaBox /></span>
-                  <span>Stock:</span>{" "}
-                  <span className="text-slate-700 dark:text-slate-300 font-bold">{product.countInStock ?? 0} unit(s)</span>
-                </div>
+                {/* Stock and Added time hidden for customers */}
             </div>
 
             {/* Description */}

@@ -16,7 +16,7 @@ const AdminProductUpdate = () => {
   const params = useParams();
   const navigate = useNavigate();
 
-  const { data: productData, isLoading } = useGetProductByIdQuery(params._id);
+  const { data: productData, isLoading } = useGetProductByIdQuery(params.id);
   const { data: categories = [] } = useFetchCategoriesQuery();
 
   const [uploadProductImage] = useUploadProductImageMutation();
@@ -33,6 +33,7 @@ const AdminProductUpdate = () => {
   const [quantity, setQuantity] = useState("");
   const [brand, setBrand] = useState("");
   const [stock, setStock] = useState("");
+  const [isTopRated, setIsTopRated] = useState(false);
 
   const [cropSrc, setCropSrc] = useState(null);
   const [isCropping, setIsCropping] = useState(false);
@@ -60,6 +61,7 @@ const AdminProductUpdate = () => {
       setQuantity(productData.quantity ?? "");
       setBrand(productData.brand || "");
       setStock(productData.countInStock ?? "");
+      setIsTopRated(productData.isTopRated || false);
     }
   }, [productData, categories]);
 
@@ -181,6 +183,7 @@ const AdminProductUpdate = () => {
       formData.append("quantity", quantity);
       formData.append("brand", brand);
       formData.append("countInStock", stock);
+      formData.append("isTopRated", isTopRated);
       if (galleryUrls.length > 0) {
         formData.append("images", JSON.stringify(galleryUrls));
       }
@@ -191,10 +194,10 @@ const AdminProductUpdate = () => {
       }
 
       // Pass FormData directly to RTK mutation (productApiSlice handles it)
-      await updateProduct({ productId: params._id, formData }).unwrap();
+      await updateProduct({ productId: params.id, formData }).unwrap();
 
       toast.success("Product successfully updated");
-      navigate("/admin/allproductslist");
+      navigate("/admin/all-products");
     } catch (err) {
       console.error("handleSubmit error:", err);
       toast.error("Product update failed. Try again.");
@@ -206,9 +209,9 @@ const AdminProductUpdate = () => {
       return;
 
     try {
-      const { data } = await deleteProduct(params._id);
+      const { data } = await deleteProduct(params.id);
       toast.success(`"${data.name}" is deleted`);
-      navigate("/admin/allproductslist");
+      navigate("/admin/all-products");
     } catch (err) {
       console.error(err);
       toast.error("Delete failed. Try again.");
@@ -372,6 +375,19 @@ const AdminProductUpdate = () => {
                     </option>
                   ))}
                 </select>
+              </div>
+
+              <div className="sm:col-span-2 flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-gray-100 dark:border-slate-700/50">
+                <input
+                  type="checkbox"
+                  id="isTopRated"
+                  checked={isTopRated}
+                  onChange={(e) => setIsTopRated(e.target.checked)}
+                  className="w-5 h-5 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500"
+                />
+                <label htmlFor="isTopRated" className="text-sm font-bold text-gray-700 dark:text-slate-300 cursor-pointer">
+                  Featured as <span className="text-emerald-500 uppercase tracking-widest text-[10px] ml-1">Top Rated Product</span>
+                </label>
               </div>
             </div>
 

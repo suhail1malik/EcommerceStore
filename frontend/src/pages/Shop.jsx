@@ -1,5 +1,6 @@
 // Shop.jsx  (refactored + commented)
 import React, { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useGetFilteredProductsQuery } from "../redux/api/productApiSlice";
 import { useFetchCategoriesQuery } from "../redux/api/categoryApiSlice";
@@ -39,12 +40,29 @@ const Shop = () => {
     useGetFilteredProductsQuery({ checked, radio });
 
   // Local UI state
-  const [priceFilter, setPriceFilter] = useState(""); // e.g. "100" or "50-200" if you later accept ranges
+  const [priceRange, setPriceRange] = useState(100000); // Max possible price
   const [searchTerm, setSearchTerm] = useState("");
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [tempBrand, setTempBrand] = useState(""); // temporary brand selection in drawer (apply only on click)
   const [selectedBrand, setSelectedBrand] = useState(""); // active brand filter
   const [sortBy, setSortBy] = useState("relevance");
+
+  const [searchParams] = useSearchParams();
+  const initialCategory = searchParams.get("category");
+  const initialSearch = searchParams.get("search");
+
+  // Sync initial search/category from URL
+  useEffect(() => {
+    if (initialSearch) {
+      setSearchTerm(initialSearch);
+    }
+    if (initialCategory && categories?.length > 0) {
+      const cat = categories.find(c => c.name.toLowerCase() === initialCategory.toLowerCase());
+      if (cat && !checked.includes(cat._id)) {
+        dispatch(setChecked([cat._id]));
+      }
+    }
+  }, [initialSearch, initialCategory, categories, dispatch]);
 
   // 1) When categories arrive, store them in redux
   useEffect(() => {
@@ -67,12 +85,8 @@ const Shop = () => {
       );
     }
 
-    // Price filter: try to treat input as a number and filter by price <= entered value.
-    // (You can replace with range logic later.)
-    const priceNum = Number(priceFilter);
-    if (priceFilter && !Number.isNaN(priceNum)) {
-      filtered = filtered.filter((p) => (Number(p.price) || 0) <= priceNum);
-    }
+    // Price filter: filter by price <= priceRange
+    filtered = filtered.filter((p) => (Number(p.price) || 0) <= priceRange);
 
     if (searchTerm) {
       filtered = filtered.filter((p) =>
@@ -82,7 +96,7 @@ const Shop = () => {
 
     // Dispatch filtered results to redux so UI (and other components) can read from same source
     dispatch(setProducts(filtered));
-  }, [productData, priceFilter, selectedBrand, searchTerm, dispatch]);
+  }, [productData, priceRange, selectedBrand, searchTerm, dispatch]);
 
   // Toggle category check (same as before)
   const handleCheck = (checkedState, id) => {
@@ -105,7 +119,7 @@ const Shop = () => {
 
   // Reset filters (does NOT reload page). Clears client and redux filters.
   const resetFilters = () => {
-    setPriceFilter("");
+    setPriceRange(100000);
     setSelectedBrand("");
     setTempBrand("");
     setSortBy("relevance");
@@ -135,11 +149,11 @@ const Shop = () => {
         <div className="flex items-center gap-2">
           {/* Active filter count */}
           <div className="text-sm text-slate-600 dark:text-slate-300 hidden md:block">
-            {selectedBrand || priceFilter || checked?.length > 0 ? (
+            {selectedBrand || (priceRange < 100000) || checked?.length > 0 ? (
               <span>
                 {(checked?.length || 0) +
                   (selectedBrand ? 1 : 0) +
-                  (priceFilter ? 1 : 0)}{" "}
+                  (priceRange < 100000 ? 1 : 0)}{" "}
                 filters
               </span>
             ) : (
@@ -171,12 +185,12 @@ const Shop = () => {
             Brand: {selectedBrand} ✕
           </button>
         )}
-        {priceFilter && (
+        {priceRange < 100000 && (
           <button
-            onClick={() => setPriceFilter("")}
+            onClick={() => setPriceRange(100000)}
             className="rounded-full bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-600 px-3 py-1 text-xs"
           >
-            Price ≤ {priceFilter} ✕
+            Price Under ₹{priceRange.toLocaleString()} ✕
           </button>
         )}
         {checked?.map((id) => {
@@ -281,22 +295,24 @@ const Shop = () => {
               </div>
             </details>
 
-            {/* Price */}
-            <details className="mb-5">
+            {/* Price Range Slider */}
+            <details className="mb-5" open>
               <summary className="cursor-pointer text-sm font-semibold text-slate-800 dark:text-slate-200 mb-3">
-                Price
+                Price Range
               </summary>
-              <div className="mt-2">
-                {/* Numeric input is better than text for price */}
+              <div className="mt-2 px-1">
                 <input
-                  type="number"
-                  placeholder="Max price"
-                  value={priceFilter}
-                  onChange={(e) => setPriceFilter(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors"
+                  type="range"
+                  min="0"
+                  max="100000"
+                  step="500"
+                  value={priceRange}
+                  onChange={(e) => setPriceRange(Number(e.target.value))}
+                  className="w-full h-2 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
                 />
-                <div className="text-xs text-slate-500 dark:text-slate-400 mt-2">
-                  Showing products with price ≤ value
+                <div className="flex justify-between mt-2">
+                   <span className="text-[10px] font-bold text-slate-400">₹0</span>
+                   <span className="text-[10px] font-bold text-emerald-500">₹{priceRange.toLocaleString()}</span>
                 </div>
               </div>
             </details>
@@ -346,127 +362,139 @@ const Shop = () => {
             )}
           </div>
         </section>
-      </div>
-
-      {/* Mobile filters drawer (explicit apply) */}
+        {/* Mobile filters drawer (explicit apply) */}
       {mobileFiltersOpen && (
-        <div className="fixed inset-0 z-[150]">
+        <div className="fixed inset-0 z-[150] flex overflow-hidden">
           {/* dark overlay closes drawer on click */}
           <div
-            className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+            className="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px] transition-opacity"
             onClick={() => setMobileFiltersOpen(false)}
           />
-          <div className="absolute right-0 top-0 h-full w-80 max-w-[85%] bg-white dark:bg-[#0b0c0e] border-l border-slate-200 dark:border-slate-800 p-5 overflow-y-auto shadow-2xl">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Filters</h3>
+          
+          <div 
+            className="relative w-80 max-w-[85%] h-full bg-white dark:bg-[#0b0c0e] border-r border-slate-200 dark:border-slate-800 p-0 flex flex-col shadow-2xl animate-fade-in-left"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800">
+              <h3 className="text-lg font-black text-slate-900 dark:text-slate-100 uppercase tracking-tighter">Filter Protocol</h3>
               <button
                 onClick={() => setMobileFiltersOpen(false)}
-                className="p-2 text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
+                className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-all"
                 aria-label="Close filters"
               >
                 <FiX size={20} />
               </button>
             </div>
 
-            {/* Search items (mobile) */}
-            <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-2">Search Items</h4>
-            <input
-              type="text"
-              placeholder="Search specific product..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full mb-6 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors"
-            />
-
-            {/* Sort (mobile) */}
-            <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-2">Sort</h4>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="w-full mb-6 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            >
-              <option value="relevance">Relevance</option>
-              <option value="priceAsc">Price: Low to High</option>
-              <option value="priceDesc">Price: High to Low</option>
-              <option value="ratingDesc">Rating</option>
-              <option value="newest">Newest</option>
-            </select>
-
-            {/* Categories (mobile) */}
-            <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-3">
-              Categories
-            </h4>
-            {categoryLoading ? (
-              <Loader />
-            ) : (
-              <div className="space-y-3 mb-6">
-                {categories?.map((c) => (
-                  <label
-                    key={c._id}
-                    className="flex items-center gap-3 text-slate-700 dark:text-slate-200 text-sm"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={checked?.includes(c._id)}
-                      onChange={(e) => handleCheck(e.target.checked, c._id)}
-                      className="w-4 h-4 text-emerald-600 rounded border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 focus:ring-emerald-500"
-                    />
-                    {c.name}
-                  </label>
-                ))}
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto p-5 space-y-8 no-scrollbar">
+              {/* Search */}
+              <div className="space-y-3">
+                <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 tracking-[0.2em] uppercase">Search Context</h4>
+                <input
+                  type="text"
+                  placeholder="Enter keywords..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-4 py-3 text-sm focus:ring-2 focus:ring-emerald-500/20"
+                />
               </div>
-            )}
 
-            {/* Brands (mobile) - uses tempBrand until Apply is clicked */}
-            <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-3">
-              Brands
-            </h4>
-            <div className="space-y-3 mb-6">
-              {uniqueBrands?.map((brand) => (
-                <label
-                  key={brand}
-                  className="flex items-center gap-3 text-slate-700 dark:text-slate-200 text-sm"
+              {/* Sort */}
+              <div className="space-y-3">
+                <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 tracking-[0.2em] uppercase">Sort Order</h4>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-4 py-3 text-sm"
                 >
+                  <option value="relevance">Relevance</option>
+                  <option value="priceAsc">Price: Low to High</option>
+                  <option value="priceDesc">Price: High to Low</option>
+                  <option value="ratingDesc">Rating</option>
+                  <option value="newest">Newest</option>
+                </select>
+              </div>
+
+              {/* Categories */}
+              <div className="space-y-4">
+                <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 tracking-[0.2em] uppercase">Categories</h4>
+                {categoryLoading ? <Loader /> : (
+                  <div className="grid grid-cols-1 gap-2">
+                    {categories?.map((c) => (
+                      <label key={c._id} className="flex items-center gap-3 p-3 rounded-xl border border-transparent hover:border-slate-200 dark:hover:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-all cursor-pointer group">
+                        <input
+                          type="checkbox"
+                          checked={checked?.includes(c._id)}
+                          onChange={(e) => handleCheck(e.target.checked, c._id)}
+                          className="w-4 h-4 text-emerald-600 rounded border-slate-300 bg-white"
+                        />
+                        <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 group-hover:text-emerald-500 transition-colors">{c.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Brands */}
+              <div className="space-y-4">
+                <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 tracking-[0.2em] uppercase">Brands</h4>
+                <div className="grid grid-cols-1 gap-2">
+                  {uniqueBrands?.map((brand) => (
+                    <label key={brand} className="flex items-center gap-3 p-3 rounded-xl border border-transparent hover:border-slate-200 dark:hover:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-all cursor-pointer group">
+                      <input
+                        type="radio"
+                        name="brand-mobile"
+                        checked={tempBrand === brand}
+                        onChange={() => setTempBrand(brand)}
+                        className="w-4 h-4 text-emerald-600"
+                      />
+                      <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 group-hover:text-emerald-500 transition-colors">{brand}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Price */}
+              <div className="space-y-4">
+                <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 tracking-[0.2em] uppercase">Price Threshold</h4>
+                <div className="px-1">
                   <input
-                    type="radio"
-                    name="brand-mobile"
-                    checked={tempBrand === brand}
-                    onChange={() => setTempBrand(brand)}
-                    className="w-4 h-4 text-emerald-600 border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 focus:ring-emerald-500"
+                    type="range"
+                    min="0"
+                    max="100000"
+                    step="500"
+                    value={priceRange}
+                    onChange={(e) => setPriceRange(Number(e.target.value))}
+                    className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
                   />
-                  {brand}
-                </label>
-              ))}
+                  <div className="flex justify-between mt-3">
+                    <span className="text-xs font-bold text-slate-400">₹0</span>
+                    <span className="text-xs font-bold text-emerald-500">₹{priceRange.toLocaleString()}</span>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            {/* Price mobile (temp as well) */}
-            <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-2">Price</h4>
-            <input
-              type="number"
-              placeholder="Max price"
-              value={priceFilter}
-              onChange={(e) => setPriceFilter(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 mb-6"
-            />
-
-            {/* Mobile actions: Apply and Reset */}
-            <div className="flex gap-3 mt-4">
-              <button
-                onClick={applyMobileFilters}
-                className="flex-1 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold transition"
-              >
-                Apply
-              </button>
+            {/* Sticky Actions */}
+            <div className="p-5 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 backdrop-blur-md grid grid-cols-2 gap-4">
               <button
                 onClick={resetFilters}
-                className="flex-1 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-100 font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+                className="py-3.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 font-bold text-xs uppercase tracking-widest hover:bg-white dark:hover:bg-slate-800 transition-all"
               >
                 Reset
+              </button>
+              <button
+                onClick={applyMobileFilters}
+                className="py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-widest shadow-lg shadow-emerald-500/20 transition-all"
+              >
+                Apply
               </button>
             </div>
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 };

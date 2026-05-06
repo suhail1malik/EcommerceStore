@@ -31,7 +31,7 @@ const Contact = () => {
             </div>
             <div>
               <h3 className="font-bold text-slate-900 dark:text-white">Email Us</h3>
-              <p className="text-slate-500 dark:text-slate-400">support@luxuryestore.com</p>
+              <p className="text-slate-500 dark:text-slate-400">support@commercehub.com</p>
             </div>
           </div>
           <div className="premium-card p-6 rounded-2xl flex items-center gap-6">
@@ -40,7 +40,7 @@ const Contact = () => {
             </div>
             <div>
               <h3 className="font-bold text-slate-900 dark:text-white">Call Us</h3>
-              <p className="text-slate-500 dark:text-slate-400">+1 (555) 000-0000</p>
+              <p className="text-slate-500 dark:text-slate-400">+1 (800) 123-4567</p>
             </div>
           </div>
           <div className="premium-card p-6 rounded-2xl flex items-center gap-6">
@@ -48,8 +48,8 @@ const Contact = () => {
               <FaMapMarkerAlt />
             </div>
             <div>
-              <h3 className="font-bold text-slate-900 dark:text-white">Visit Us</h3>
-              <p className="text-slate-500 dark:text-slate-400">123 Luxury Lane, Design District</p>
+              <h3 className="font-bold text-slate-900 dark:text-white">Global Headquarters</h3>
+              <p className="text-slate-500 dark:text-slate-400">77 Silicon Valley, Tech Plaza, CA</p>
             </div>
           </div>
         </div>

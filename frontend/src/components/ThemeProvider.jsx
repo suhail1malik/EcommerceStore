@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-const ThemeContext = createContext({ theme: "light", toggleTheme: () => {} });
+const ThemeContext = createContext({ theme: "dark", toggleTheme: () => {} });
 
 export const useTheme = () => useContext(ThemeContext);
 
@@ -9,11 +9,10 @@ export function ThemeProvider({ children }) {
     try {
       const saved = localStorage.getItem("theme");
       if (saved === "light" || saved === "dark") return saved;
-      return window.matchMedia("(prefers-color-scheme: dark)").matches
-        ? "dark"
-        : "light";
+      // Default to dark for first-time visitors as requested
+      return "dark";
     } catch {
-      return "light";
+      return "dark";
     }
   };
 

@@ -75,7 +75,7 @@ const Register = () => {
               Join the Hub
             </h1>
             <p className="text-slate-400 text-sm font-medium max-w-xs mx-auto">
-              Initialize your profile to unlock premium marketplace access.
+              Create your profile to unlock premium marketplace access.
             </p>
           </header>
 
@@ -86,7 +86,7 @@ const Register = () => {
                   htmlFor="name"
                   className="block text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 mb-2 ml-1"
                 >
-                  Legal Name
+                  Full Name
                 </label>
                 <input
                   id="name"
@@ -104,7 +104,7 @@ const Register = () => {
                   htmlFor="email"
                   className="block text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 mb-2 ml-1"
                 >
-                  Contact Email
+                  Email Address
                 </label>
                 <input
                   id="email"
@@ -124,7 +124,7 @@ const Register = () => {
                   htmlFor="password"
                   className="block text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 mb-2 ml-1"
                 >
-                  Secret Key
+                  Account Password
                 </label>
                 <input
                   id="password"
@@ -141,7 +141,7 @@ const Register = () => {
                   htmlFor="confirmPassword"
                   className="block text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 mb-2 ml-1"
                 >
-                  Verify Key
+                  Confirm Password
                 </label>
                 <input
                   id="confirmPassword"
@@ -165,25 +165,25 @@ const Register = () => {
               className="w-full relative group/btn overflow-hidden rounded-xl bg-emerald-600 py-4 text-white font-bold uppercase tracking-widest text-sm shadow-xl shadow-emerald-600/20 hover:bg-emerald-500 transition-all active:scale-95 disabled:opacity-50"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-emerald-400/20 to-transparent translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-1000" />
-              {isLoading ? "Provisioning..." : "Initialize Profile"}
+              {isLoading ? "Creating Account..." : "Create Account"}
             </button>
           </form>
 
           <div className="mt-10 text-center text-xs font-bold uppercase tracking-widest text-slate-500 border-t border-slate-800 pt-8 relative z-10">
-            Registered Entity?{" "}
+            Already registered?{" "}
             <Link
               to={redirect ? `/login?redirect=${redirect}` : "/login"}
               className="text-emerald-500 hover:text-emerald-400 transition-colors ml-1"
             >
-              Access Terminal &rarr;
+              Sign In &rarr;
             </Link>
           </div>
 
           <div className="mt-6 text-[10px] font-bold text-slate-600 text-center relative z-10">
-            By initializing, you accept our{" "}
+            By joining, you accept our{" "}
             <Link to="/terms" className="text-slate-400 hover:text-emerald-500 underline decoration-slate-700">Terms</Link>
             {" "}and{" "}
-            <Link to="/privacy" className="text-slate-400 hover:text-emerald-500 underline decoration-slate-700">Privacy Protocol</Link>
+            <Link to="/privacy" className="text-slate-400 hover:text-emerald-500 underline decoration-slate-700">Privacy Policy</Link>
           </div>
         </div>
       </motion.div>

@@ -189,19 +189,43 @@ const ProductDetails = () => {
           {/* Details (span 1 on mobile, 2 on lg) */}
           <div className="col-span-1 lg:col-span-2 lg:pl-8 flex flex-col pt-2 md:pt-4">
             {/* 1. Price + In Stock Badge */}
-            <div className="mb-4 flex flex-wrap items-center gap-4">
-              <span className="text-4xl sm:text-5xl lg:text-6xl font-black text-emerald-600 dark:text-emerald-400">
-                ₹{product.price?.toLocaleString("en-IN")}
-              </span>
-              {product.countInStock > 0 ? (
-                <span className="bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 px-3 py-1 text-xs font-bold rounded-full tracking-wider uppercase shadow-sm">
-                  In Stock
+            <div className="mb-4 flex flex-wrap items-end gap-4">
+              <div className="flex flex-col">
+                <div className="flex items-center gap-3">
+                  <span className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white">
+                    ₹{product.price?.toLocaleString("en-IN")}
+                  </span>
+                  {product.originalPrice > product.price && (
+                    <div className="flex flex-col">
+                      <span className="text-lg sm:text-xl text-slate-400 line-through font-medium">
+                        ₹{product.originalPrice?.toLocaleString("en-IN")}
+                      </span>
+                      <span className="text-emerald-500 text-xs font-black uppercase tracking-widest">
+                        Save {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              <div className="flex flex-col gap-2 mb-2">
+                {product.countInStock > 0 ? (
+                  <span className="bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 px-3 py-1 text-[10px] font-black rounded-full tracking-widest uppercase shadow-sm flex items-center gap-1.5 w-fit">
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    In Stock
+                  </span>
+                ) : (
+                  <span className="bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800 px-3 py-1 text-[10px] font-black rounded-full tracking-widest uppercase shadow-sm w-fit">
+                    Out of Stock
+                  </span>
+                )}
+                <span className="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800/50 px-3 py-1 text-[10px] font-black rounded-full tracking-widest uppercase shadow-sm flex items-center gap-1.5 w-fit">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M16 15v-1a4 4 0 00-4-4H8m0 0l3 3m-3-3l3-3m9 14V5a2 2 0 00-2-2H6a2 2 0 00-2 2v16l4-2 4 2 4-2 4 2z" />
+                  </svg>
+                  10-Day Return Policy
                 </span>
-              ) : (
-                <span className="bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800 px-3 py-1 text-xs font-bold rounded-full tracking-wider uppercase shadow-sm">
-                  Out of Stock
-                </span>
-              )}
+              </div>
             </div>
 
             {/* 2. Product Name */}
@@ -210,7 +234,7 @@ const ProductDetails = () => {
             </h1>
 
             {/* 3. Rating Just Below Name */}
-            {(product.numReviews > 0 || product.rating > 0) && (
+            {product.numReviews > 0 && (
               <a href="#reviews" className="flex items-center gap-2 mb-6 text-sm hover:opacity-80 transition-opacity cursor-pointer group">
                 <Ratings value={product.rating} />
                 <span className="font-medium text-slate-500 dark:text-slate-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors underline decoration-transparent group-hover:decoration-emerald-500/50 underline-offset-4">

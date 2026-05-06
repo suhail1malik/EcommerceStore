@@ -47,9 +47,20 @@ const Navigation = () => {
   const dispatch = useDispatch();
   const [logoutApiCall] = useLogoutMutation();
 
+  const [scrolled, setScrolled] = useState(false);
+  
   const dropdownRef = useRef(null);
   const mobileRef = useRef(null);
   const toggleBtnRef = useRef(null);
+
+  // Handle scroll shadow
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   // Close menus when route changes
   useEffect(() => {
@@ -162,8 +173,12 @@ const Navigation = () => {
 
   return (
     <>
-      <nav className="sticky top-0 z-[100] w-full bg-white/85 dark:bg-zinc-950/85 backdrop-blur-xl border-b border-slate-200 dark:border-white/10 shadow-[0_15px_40px_-10px_rgba(15,23,42,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.6)] transition-all duration-300">
-      <div className="max-w-[1400px] mx-auto px-3 sm:px-4 lg:px-6 h-14 flex items-center gap-3">
+      <nav className={`sticky top-0 z-[100] w-full transition-all duration-300 ${
+        scrolled 
+          ? "bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl border-b border-slate-200 dark:border-white/5 shadow-lg shadow-black/5" 
+          : "bg-transparent border-b border-transparent"
+      }`}>
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
         {/* Left: brand + badges */}
         <div className="flex items-center gap-4 text-slate-800 dark:text-white shrink-0">
           <Link
@@ -183,47 +198,38 @@ const Navigation = () => {
             {locating ? "Detecting..." : locationLabel}
           </button>
 
-          <div className="hidden md:flex items-center gap-5">
-            <Link
-              to="/"
-              className={`flex items-center gap-2 transition-colors ${location.pathname === '/' ? 'text-emerald-500 font-semibold' : 'hover:text-emerald-400'}`}
-              aria-label="Go to Home"
-            >
-              <AiOutlineHome className="text-xl" />
-              <span className="hidden sm:inline font-medium">Home</span>
-            </Link>
-
-            <Link
-              to="/shop"
-              className={`flex items-center gap-2 transition-colors ${location.pathname === '/shop' ? 'text-emerald-500 font-semibold' : 'hover:text-emerald-400'}`}
-              aria-label="Browse Shop"
-            >
-              <AiOutlineShopping className="text-xl" />
-              <span className="hidden sm:inline font-medium">Shop</span>
-            </Link>
-
-            {userInfo && (
-              <Link
-                to="/my-orders"
-                className={`flex items-center gap-2 transition-colors ${location.pathname === '/my-orders' ? 'text-emerald-500 font-semibold' : 'hover:text-emerald-400'}`}
-                aria-label="My Orders"
-              >
-                <AiOutlineShopping className="text-xl" />
-                <span className="hidden sm:inline font-medium">Orders</span>
-              </Link>
-            )}
-
-            <Link
-              to="/favorite"
-              className={`flex items-center gap-2 transition-colors ${location.pathname === '/favorite' ? 'text-emerald-500 font-semibold' : 'hover:text-emerald-400'}`}
-              aria-label="Favorites"
-            >
-              <span className="relative inline-block">
-                <FaHeart className="text-xl" />
-                <FavoritesCount />
-              </span>
-              <span className="hidden sm:inline font-medium">Favorites</span>
-            </Link>
+          <div className="hidden md:flex items-center gap-7">
+            {[
+              { to: "/", icon: AiOutlineHome, label: "Home" },
+              { to: "/shop", icon: AiOutlineShopping, label: "Shop" },
+              { to: "/my-orders", icon: AiOutlineShopping, label: "Orders", protected: true },
+              { to: "/favorite", icon: FaHeart, label: "Favorites", extra: <FavoritesCount /> },
+            ].map((link) => {
+              if (link.protected && !userInfo) return null;
+              const isActive = location.pathname === link.to;
+              const Icon = link.icon;
+              
+              return (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  className={`group relative flex items-center gap-2 py-2 transition-all duration-300 ${
+                    isActive ? "text-emerald-500 font-bold" : "text-slate-600 dark:text-slate-300 hover:text-emerald-500"
+                  }`}
+                >
+                  <span className="relative">
+                    <Icon className={`text-xl transition-transform duration-300 group-hover:scale-110 ${isActive ? 'scale-110' : ''}`} />
+                    {link.extra && <span className="absolute -top-1 -right-1">{link.extra}</span>}
+                  </span>
+                  <span className="hidden sm:inline text-sm tracking-wide">{link.label}</span>
+                  
+                  {/* Underline Animation */}
+                  <span className={`absolute bottom-0 left-0 h-0.5 bg-emerald-500 transition-all duration-300 ${
+                    isActive ? "w-full" : "w-0 group-hover:w-full"
+                  }`} />
+                </Link>
+              );
+            })}
           </div>
         </div>
 
@@ -612,48 +618,50 @@ const Navigation = () => {
       {/* Mobile Bottom Navigation Bar */}
       <div className="md:hidden fixed bottom-0 left-0 w-full bg-white/95 dark:bg-zinc-950/95 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 z-[100] pb-safe" style={{ transform: "translateZ(0)" }}>
         <div className="flex items-center justify-around h-14">
-          <Link to="/" className={`flex flex-col items-center justify-center gap-1 w-full h-full transition-colors ${location.pathname === '/' ? 'text-emerald-500 dark:text-emerald-400 font-bold scale-105' : 'text-slate-500 dark:text-slate-400 hover:text-emerald-500 dark:hover:text-emerald-400'}`}>
-            <AiOutlineHome size={20} />
-            <span className="text-[10px] font-medium">Home</span>
+          <Link to="/" className={`flex flex-col items-center justify-center gap-1 w-full h-full transition-all active:scale-90 ${location.pathname === '/' ? 'text-emerald-500 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:text-emerald-500 dark:hover:text-emerald-400'}`}>
+            <AiOutlineHome size={20} className={location.pathname === '/' ? 'scale-110' : ''} />
+            <span className="text-[10px] font-medium tracking-tight">Home</span>
           </Link>
-          <Link to="/shop" className={`flex flex-col items-center justify-center gap-1 w-full h-full transition-colors ${location.pathname === '/shop' ? 'text-emerald-500 dark:text-emerald-400 font-bold scale-105' : 'text-slate-500 dark:text-slate-400 hover:text-emerald-500 dark:hover:text-emerald-400'}`}>
-            <AiOutlineSearch size={20} />
-            <span className="text-[10px] font-medium">Shop</span>
+          <Link to="/shop" className={`flex flex-col items-center justify-center gap-1 w-full h-full transition-all active:scale-90 ${location.pathname === '/shop' ? 'text-emerald-500 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:text-emerald-500 dark:hover:text-emerald-400'}`}>
+            <AiOutlineShopping size={20} className={location.pathname === '/shop' ? 'scale-110' : ''} />
+            <span className="text-[10px] font-medium tracking-tight">Shop</span>
           </Link>
-          <Link to="/cart" className={`flex flex-col items-center justify-center gap-1 w-full h-full relative transition-colors ${location.pathname === '/cart' ? 'text-emerald-500 dark:text-emerald-400 font-bold scale-105' : 'text-slate-500 dark:text-slate-400 hover:text-emerald-500 dark:hover:text-emerald-400'}`}>
+          <Link to="/cart" className={`flex flex-col items-center justify-center gap-1 w-full h-full relative transition-all active:scale-90 ${location.pathname === '/cart' ? 'text-emerald-500 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:text-emerald-500 dark:hover:text-emerald-400'}`}>
             <div className="relative">
-              <AiOutlineShoppingCart size={20} />
+              <AiOutlineShoppingCart size={20} className={location.pathname === '/cart' ? 'scale-110' : ''} />
               {cartItems.length > 0 && (
                 <span className="absolute -top-1.5 -right-1.5 bg-emerald-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-[9px] font-bold">
                   {cartItems.reduce((a, c) => a + c.qty, 0)}
                 </span>
               )}
             </div>
-            <span className="text-[10px] font-medium">Cart</span>
+            <span className="text-[10px] font-medium tracking-tight">Cart</span>
           </Link>
           {userInfo && (
-             <Link to="/my-orders" className={`flex flex-col items-center justify-center gap-1 w-full h-full transition-colors ${location.pathname === '/my-orders' ? 'text-emerald-500 dark:text-emerald-400 font-bold scale-105' : 'text-slate-500 dark:text-slate-400 hover:text-emerald-500 dark:hover:text-emerald-400'}`}>
-                <AiOutlineShopping size={20} />
-                <span className="text-[10px] font-medium">Orders</span>
+             <Link to="/my-orders" className={`flex flex-col items-center justify-center gap-1 w-full h-full transition-all active:scale-90 ${location.pathname === '/my-orders' ? 'text-emerald-500 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:text-emerald-500 dark:hover:text-emerald-400'}`}>
+                <AiOutlineShopping size={20} className={location.pathname === '/my-orders' ? 'scale-110' : ''} />
+                <span className="text-[10px] font-medium tracking-tight">Orders</span>
              </Link>
           )}
           {userInfo ? (
-            <Link to="/profile" className={`flex flex-col items-center justify-center gap-1 w-full h-full transition-colors ${location.pathname.startsWith('/profile') || location.pathname.startsWith('/admin') ? 'text-emerald-500 dark:text-emerald-400 font-bold scale-105' : 'text-slate-500 dark:text-slate-400 hover:text-emerald-500 dark:hover:text-emerald-400'}`}>
-              {userInfo.profilePic ? (
-                <img 
-                  src={userInfo.profilePic} 
-                  alt="Profile" 
-                  className={`w-6 h-6 rounded-full object-cover border ${location.pathname.startsWith('/profile') ? 'border-emerald-500' : 'border-transparent'}`} 
-                />
-              ) : (
-                <AiOutlineUserAdd size={20} />
-              )}
-              <span className="text-[10px] font-medium">Profile</span>
+            <Link to="/profile" className={`flex flex-col items-center justify-center gap-1 w-full h-full transition-all active:scale-90 ${location.pathname.startsWith('/profile') || location.pathname.startsWith('/admin') ? 'text-emerald-500 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:text-emerald-500 dark:hover:text-emerald-400'}`}>
+              <div className={`relative ${location.pathname.startsWith('/profile') ? 'scale-110' : ''}`}>
+                {userInfo.profilePic ? (
+                  <img 
+                    src={userInfo.profilePic} 
+                    alt="Profile" 
+                    className={`w-6 h-6 rounded-full object-cover border-2 ${location.pathname.startsWith('/profile') ? 'border-emerald-500' : 'border-transparent'}`} 
+                  />
+                ) : (
+                  <AiOutlineUserAdd size={20} />
+                )}
+              </div>
+              <span className="text-[10px] font-medium tracking-tight">Profile</span>
             </Link>
           ) : (
-            <Link to="/login" className={`flex flex-col items-center justify-center gap-1 w-full h-full transition-colors ${location.pathname === '/login' ? 'text-emerald-500 dark:text-emerald-400 font-bold scale-105' : 'text-slate-500 dark:text-slate-400 hover:text-emerald-500 dark:hover:text-emerald-400'}`}>
-              <AiOutlineLogin size={20} />
-              <span className="text-[10px] font-medium">Login</span>
+            <Link to="/login" className={`flex flex-col items-center justify-center gap-1 w-full h-full transition-all active:scale-90 ${location.pathname === '/login' ? 'text-emerald-500 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:text-emerald-500 dark:hover:text-emerald-400'}`}>
+              <AiOutlineLogin size={20} className={location.pathname === '/login' ? 'scale-110' : ''} />
+              <span className="text-[10px] font-medium tracking-tight">Login</span>
             </Link>
           )}
         </div>

@@ -14,18 +14,20 @@ const Footer = () => {
           {/* Brand Info & Newsletter */}
           <div className="lg:col-span-5 space-y-8">
             <div className="space-y-6">
-              <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tighter flex items-center gap-2">
-                <span className="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center text-white text-lg font-bold">C</span>
-                Commerce<span className="text-indigo-600">Hub</span>
-              </h2>
+              <Link 
+                to="/"
+                className="text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-1 hover:opacity-80 transition-all"
+              >
+                Commerce<span className="bg-gradient-to-r from-indigo-500 to-emerald-500 bg-clip-text text-transparent">Hub</span>
+              </Link>
               <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 leading-relaxed max-w-sm">
-                The ultimate destination for smart shopping. Discover curated collections, top-rated products, and seamless shopping experience - all in one place.
+                CommerceHub – A modern full-stack e-commerce platform. Discover curated collections, top-rated products, and a seamless shopping experience.
               </p>
             </div>
 
             {/* Newsletter */}
             <div className="space-y-4">
-              <h3 className="text-xs font-black text-slate-600 dark:text-slate-500 tracking-[0.2em] uppercase">Newsletter Protocol</h3>
+              <h3 className="text-xs font-black text-slate-600 dark:text-slate-500 tracking-[0.2em] uppercase">Stay in the Circle</h3>
               <div className="relative max-w-sm group">
                 <input 
                   type="email" 
@@ -40,8 +42,12 @@ const Footer = () => {
             </div>
 
             <div className="flex gap-4">
-              {[FaFacebook, FaTwitter, FaInstagram].map((Icon, i) => (
-                <a key={i} href="#" className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:text-emerald-500 hover:border-emerald-500/50 transition-all duration-300">
+              {[
+                { Icon: FaFacebook, link: "https://facebook.com/commercehub" },
+                { Icon: FaTwitter, link: "https://twitter.com/commercehub" },
+                { Icon: FaInstagram, link: "https://instagram.com/commercehub" }
+              ].map(({ Icon, link }, i) => (
+                <a key={i} href={link} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:text-indigo-500 hover:border-indigo-500/50 transition-all duration-300">
                   <Icon size={18} />
                 </a>
               ))}
@@ -56,8 +62,8 @@ const Footer = () => {
               <ul className="space-y-4">
                 {['All Collections', 'New Arrivals', 'Best Sellers', 'Exclusive Drop'].map(item => (
                   <li key={item}>
-                    <Link to="/shop" className="text-sm font-semibold text-slate-700 dark:text-slate-400 hover:text-emerald-500 transition-colors flex items-center gap-2 group">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 opacity-0 group-hover:opacity-100 transition-all scale-0 group-hover:scale-100" />
+                    <Link to="/shop" className="text-sm font-semibold text-slate-700 dark:text-slate-400 hover:text-indigo-500 transition-colors flex items-center gap-2 group">
+                      <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 opacity-0 group-hover:opacity-100 transition-all scale-0 group-hover:scale-100" />
                       {item}
                     </Link>
                   </li>
@@ -71,8 +77,8 @@ const Footer = () => {
               <ul className="space-y-4">
                 {['Contact Support', 'Order Tracking', 'Shipping Policy', 'Returns'].map(item => (
                   <li key={item}>
-                    <Link to="/contact" className="text-sm font-semibold text-slate-700 dark:text-slate-400 hover:text-emerald-500 transition-colors flex items-center gap-2 group">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 opacity-0 group-hover:opacity-100 transition-all scale-0 group-hover:scale-100" />
+                    <Link to="/contact" className="text-sm font-semibold text-slate-700 dark:text-slate-400 hover:text-indigo-500 transition-colors flex items-center gap-2 group">
+                      <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 opacity-0 group-hover:opacity-100 transition-all scale-0 group-hover:scale-100" />
                       {item}
                     </Link>
                   </li>
@@ -86,8 +92,8 @@ const Footer = () => {
               <ul className="space-y-4">
                 {['About Us', 'Terms of Service', 'Privacy Policy', 'Store Locator'].map(item => (
                   <li key={item}>
-                    <Link to="/terms" className="text-sm font-semibold text-slate-700 dark:text-slate-400 hover:text-emerald-500 transition-colors flex items-center gap-2 group">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 opacity-0 group-hover:opacity-100 transition-all scale-0 group-hover:scale-100" />
+                    <Link to="/terms" className="text-sm font-semibold text-slate-700 dark:text-slate-400 hover:text-indigo-500 transition-colors flex items-center gap-2 group">
+                      <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 opacity-0 group-hover:opacity-100 transition-all scale-0 group-hover:scale-100" />
                       {item}
                     </Link>
                   </li>

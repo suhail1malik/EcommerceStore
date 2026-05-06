@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { FaTrash, FaArrowRight, FaLock } from "react-icons/fa";
+import { AiOutlineShoppingCart } from "react-icons/ai";
 import { addToCart, removeFromCart, clearImmediateCheckout } from "../redux/features/cart/cartSlice";
 import { calculateCartTotals } from "../utils/cartUtils";
 import getImageSource from "../utils/images";
@@ -46,8 +47,8 @@ const Cart = () => {
 
         {cartItems.length === 0 ? (
           <div className="max-w-3xl mx-auto text-center py-20 bg-gray-50 dark:bg-slate-800/40 rounded-[32px] border border-gray-100 dark:border-slate-700/50">
-            <div className="w-24 h-24 bg-white dark:bg-slate-800 rounded-full mx-auto flex items-center justify-center text-5xl mb-6 shadow-sm">
-              🛍️
+            <div className="w-24 h-24 bg-white dark:bg-slate-800 rounded-full mx-auto flex items-center justify-center text-emerald-500 mb-6 shadow-sm border border-slate-100 dark:border-slate-700">
+              <AiOutlineShoppingCart size={48} />
             </div>
             <h2 className="text-2xl font-bold mb-3 text-gray-900 dark:text-slate-100">Your bag is empty</h2>
             <p className="text-slate-500 dark:text-slate-400 mb-8 max-w-md mx-auto">

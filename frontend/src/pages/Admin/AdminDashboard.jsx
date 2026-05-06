@@ -21,9 +21,9 @@ import { useEffect } from "react";
 const AdminDashboard = () => {
   const [chartType, setChartType] = useState("bar"); // bar, pie, line
   const [activities, setActivities] = useState([
-    { id: 1, type: 'order', msg: 'New order processed from Mumbai', time: 'Just now' },
-    { id: 2, type: 'user', msg: 'New stakeholder registered from Delhi', time: '2m ago' },
-    { id: 3, type: 'stock', msg: 'Stock alert: RTX 4090 critical level', time: '5m ago' },
+    { id: 1, type: 'order', msg: 'New order processed successfully', time: 'Just now' },
+    { id: 2, type: 'user', msg: 'New customer registration completed', time: '2m ago' },
+    { id: 3, type: 'stock', msg: 'Stock alert: High demand item reaching critical level', time: '5m ago' },
   ]);
 
   const { data: sales, isLoading: loadingSales } = useGetTotalSalesQuery();
@@ -48,7 +48,7 @@ const AdminDashboard = () => {
       const newActivity = {
         id: Date.now(),
         type: Math.random() > 0.5 ? 'order' : 'user',
-        msg: Math.random() > 0.5 ? `New order arriving from ${city}` : `User auth successful from ${city}`,
+        msg: Math.random() > 0.5 ? `New order arriving from verified customer` : `User authentication successful`,
         time: 'Just now'
       };
       setActivities(prev => [newActivity, ...prev.slice(0, 4)]);
@@ -321,7 +321,7 @@ const AdminDashboard = () => {
          {/* Top Customers List */}
          <motion.div variants={itemVariants} className="premium-card rounded-3xl overflow-hidden flex flex-col">
             <div className="px-6 py-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
-               <h3 className="text-lg font-bold text-slate-900 dark:text-white">Top Performing Stakeholders</h3>
+               <h3 className="text-lg font-bold text-slate-900 dark:text-white">Recent Customer Activity</h3>
             </div>
             <div className="flex-1 overflow-y-auto max-h-[300px]">
                {loadingCustomers ? <Loader /> : (

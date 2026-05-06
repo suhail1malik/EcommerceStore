@@ -49,8 +49,7 @@ const AdminLayout = lazy(() => import("./pages/Admin/AdminLayout.jsx"));
 
 // Reusable wrappers
 const WithSuspense = ({ children }) => (
-  // Using null fallback eliminates UI jitter during micro-transitions (FLOC)
-  <Suspense fallback={null}>{children}</Suspense>
+  <Suspense fallback={<LoadingSpinner />}>{children}</Suspense>
 );
 
 const WithErrorBoundary = ({ children }) => (

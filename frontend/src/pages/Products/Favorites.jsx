@@ -4,6 +4,8 @@ import { selectFavoriteProduct } from "../../redux/features/favorites/favoriteSl
 import ProductCard from "./ProductCard";
 import { Link } from "react-router-dom";
 import { useGetTopProductsQuery } from "../../redux/api/productApiSlice";
+import { motion } from "framer-motion";
+import { FaHeart } from "react-icons/fa";
 
 const Favorites = () => {
   const favorites = useSelector(selectFavoriteProduct) || [];
@@ -11,7 +13,11 @@ const Favorites = () => {
   const { data: topProducts } = useGetTopProductsQuery();
 
   return (
-    <section className="w-full px-4 sm:px-6 lg:px-12 py-8">
+    <motion.section 
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="w-full px-4 sm:px-6 lg:px-12 py-8"
+    >
       <div className="max-w-[1400px] mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -34,13 +40,19 @@ const Favorites = () => {
         </div>
 
         {favList.length === 0 ? (
-          <div className="text-center py-20">
-            <p className="text-lg text-slate-300 mb-4">No favorites yet.</p>
+          <div className="max-w-3xl mx-auto text-center py-20 bg-slate-50 dark:bg-slate-900/40 rounded-[32px] border border-slate-100 dark:border-slate-800/50">
+            <div className="w-24 h-24 bg-white dark:bg-slate-900 rounded-full mx-auto flex items-center justify-center text-emerald-500 mb-6 shadow-sm border border-slate-100 dark:border-slate-800/50">
+              <FaHeart size={32} />
+            </div>
+            <h2 className="text-2xl font-bold mb-3 text-slate-900 dark:text-white">No favorites yet</h2>
+            <p className="text-slate-500 dark:text-slate-400 mb-8 max-w-md mx-auto">
+              Your wishlist is currently empty. Start exploring our collections and save the pieces you love.
+            </p>
             <Link
               to="/shop"
-              className="inline-block px-5 py-2 rounded-md bg-emerald-600 text-white"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-emerald-600 text-white font-bold tracking-widest uppercase text-sm shadow-xl shadow-emerald-600/20 hover:bg-emerald-700 hover:-translate-y-1 transition-all active:scale-95"
             >
-              Browse products
+              Discover Collections
             </Link>
           </div>
         ) : (

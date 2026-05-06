@@ -38,9 +38,12 @@ app.set("trust proxy", 1);
 const port = process.env.PORT || 5100;
 
 // Security Middlewares
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: false, // Set to true if not using external CDNs
+}));
 app.use(mongoSanitize());
 app.use(compression());
+app.use(express.json({ limit: "10kb" })); // Protection against large payload DoS
 
 // Rate Limiting API endpoints
 const apiLimiter = rateLimit({
@@ -110,8 +113,9 @@ app.use((err, req, res, next) => {
       .join(", ");
   }
 
+  // Standardized error response
   res.status(err.statusCode || statusCode).json({
-    message,
+    message: process.env.NODE_ENV === "production" ? "Internal Server Error" : message,
     stack: process.env.NODE_ENV === "production" ? null : err.stack,
   });
 });

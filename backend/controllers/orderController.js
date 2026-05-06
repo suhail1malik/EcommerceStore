@@ -204,6 +204,11 @@ const findOrderById = async (req, res) => {
     );
 
     if (order) {
+      // Security Check: Only allow if it's the user's order OR the user is an admin
+      if (order.user._id.toString() !== req.user._id.toString() && !req.user.isAdmin) {
+        res.status(403);
+        throw new Error("Not authorized to view this order");
+      }
       res.json(order);
     } else {
       res.status(404);

@@ -60,7 +60,7 @@ const Login = () => {
               Welcome back
             </h1>
             <p className="text-slate-400 text-sm font-medium">
-              Authenticate to access your curated dashboard.
+              Sign in to access your curated collection.
             </p>
           </header>
 
@@ -70,7 +70,7 @@ const Login = () => {
                 htmlFor="email"
                 className="block text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 mb-2 ml-1"
               >
-                Access Identifier (Email)
+                Email Address
               </label>
               <div className="relative">
                 <input
@@ -91,10 +91,10 @@ const Login = () => {
                   htmlFor="password"
                   className="block text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500"
                 >
-                  Secure Sequence (Password)
+                  Security Password
                 </label>
                 <Link to="/forgot-password" className="text-[10px] font-bold uppercase tracking-widest text-emerald-500 hover:text-emerald-400 transition-colors">
-                  Reset Link
+                  Forgot Password?
                 </Link>
               </div>
               <input
@@ -119,12 +119,12 @@ const Login = () => {
                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                    Authenticating...
                 </div>
-              ) : "Sign in to Terminal"}
+              ) : "Sign in to Account"}
             </button>
           </form>
 
           <div className="mt-10 text-center text-xs font-bold uppercase tracking-widest text-slate-500 border-t border-slate-800 pt-8 relative z-10">
-            Unregistered Entity?{" "}
+            New to CommerceHub?{" "}
             <Link
               to={redirect ? `/register?redirect=${redirect}` : "/register"}
               className="text-emerald-500 hover:text-emerald-400 transition-colors ml-1"

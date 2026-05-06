@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useGetFilteredProductsQuery } from "../redux/api/productApiSlice";
 import { useFetchCategoriesQuery } from "../redux/api/categoryApiSlice";
 import { FiFilter, FiX } from "react-icons/fi";
+import { motion, AnimatePresence } from "framer-motion";
 
 import {
   setCategories,
@@ -340,27 +341,59 @@ const Shop = () => {
               </span>
             </div>
           )}
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5">
-            {productLoading ? (
-              [1, 2, 3, 4, 5, 6, 7, 8].map((n) => <SkeletonProductCard key={n} />)
-            ) : (
-              [...(products || [])]
-                .sort((a, b) => {
-                  if (sortBy === "priceAsc")
-                    return (a.price || 0) - (b.price || 0);
-                  if (sortBy === "priceDesc")
-                    return (b.price || 0) - (a.price || 0);
-                  if (sortBy === "ratingDesc")
-                    return (b.rating || 0) - (a.rating || 0);
-                  if (sortBy === "newest")
-                    return (
-                       new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
-                    );
-                  return 0;
-                })
-                .map((p) => <ProductCard key={p._id} product={p} />)
-            )}
-          </div>
+          
+          {products?.length === 0 && !productLoading ? (
+            <div className="flex flex-col items-center justify-center py-20 text-center bg-slate-50 dark:bg-slate-900/50 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800">
+               <div className="w-20 h-20 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center text-3xl mb-6 shadow-sm">🔍</div>
+               <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">No matching pieces found</h3>
+               <p className="text-slate-500 dark:text-slate-400 mb-8 max-w-xs mx-auto text-sm">
+                 We couldn't find any products matching your current filters. Try adjusting your search or resetting all filters.
+               </p>
+               <button 
+                 onClick={resetFilters}
+                 className="px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-emerald-600/20"
+               >
+                 Reset All Filters
+               </button>
+            </div>
+          ) : (
+            <motion.div 
+              layout
+              className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5"
+            >
+              {productLoading ? (
+                [1, 2, 3, 4, 5, 6, 7, 8].map((n) => <SkeletonProductCard key={n} />)
+              ) : (
+                <AnimatePresence>
+                  {[...(products || [])]
+                    .sort((a, b) => {
+                      if (sortBy === "priceAsc")
+                        return (a.price || 0) - (b.price || 0);
+                      if (sortBy === "priceDesc")
+                        return (b.price || 0) - (a.price || 0);
+                      if (sortBy === "ratingDesc")
+                        return (b.rating || 0) - (a.rating || 0);
+                      if (sortBy === "newest")
+                        return (
+                           new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
+                        );
+                      return 0;
+                    })
+                    .map((p, idx) => (
+                      <motion.div
+                        key={p._id}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        transition={{ duration: 0.3, delay: idx * 0.05 }}
+                      >
+                        <ProductCard product={p} />
+                      </motion.div>
+                    ))}
+                </AnimatePresence>
+              )}
+            </motion.div>
+          )}
         </section>
         {/* Mobile filters drawer (explicit apply) */}
       {mobileFiltersOpen && (

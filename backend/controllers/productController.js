@@ -15,7 +15,7 @@ const uploadToCloudinary = async (filePath, folder = "ecommerce_products") => {
 
 const addProduct = asyncHandler(async (req, res) => {
   // express-formidable puts text fields in req.fields and files in req.files
-  const { name, description, price, category, quantity, brand } = req.fields;
+  const { name, description, price, category, quantity, brand, originalPrice } = req.fields;
   
   let gallery = [];
   try {
@@ -58,10 +58,24 @@ const addProduct = asyncHandler(async (req, res) => {
     }
   }
 
+  // Calculate discount if originalPrice exists
+  let discount = 0;
+  if (originalPrice && Number(originalPrice) > Number(price)) {
+    discount = Math.round(((Number(originalPrice) - Number(price)) / Number(originalPrice)) * 100);
+  }
+
   const product = new Product({
-    ...req.fields,
+    name,
+    description,
+    price,
+    category,
+    quantity,
+    brand,
+    originalPrice: originalPrice || price,
+    discount,
     image: image || "/uploads/default-product.jpg",
     images: gallery,
+    countInStock: quantity, // Initialize stock with quantity
   });
 
   await product.save();
@@ -70,7 +84,7 @@ const addProduct = asyncHandler(async (req, res) => {
 });
 
 const updateProductDetails = asyncHandler(async (req, res) => {
-  const { name, description, price, category, quantity, brand } = req.fields;
+  const { name, description, price, category, quantity, brand, originalPrice } = req.fields;
   
   let gallery = [];
   try {
@@ -97,10 +111,28 @@ const updateProductDetails = asyncHandler(async (req, res) => {
       return res.status(400).json({ error: "Quantity is required" });
   }
 
-  // Build update data from fields
-  const updateData = { ...req.fields };
+  // Build update data with explicit fields
+  const updateData = {
+    name,
+    description,
+    price,
+    category,
+    quantity,
+    brand,
+    countInStock: quantity,
+  };
+
   if (req.fields.images !== undefined) {
     updateData.images = gallery;
+  }
+
+  // Recalculate discount
+  if (originalPrice && Number(originalPrice) > Number(price)) {
+    updateData.discount = Math.round(((Number(originalPrice) - Number(price)) / Number(originalPrice)) * 100);
+    updateData.originalPrice = originalPrice;
+  } else {
+    updateData.discount = 0;
+    updateData.originalPrice = price;
   }
 
   // If a new image is provided, upload to Cloudinary and replace URL

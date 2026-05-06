@@ -2,6 +2,7 @@
 import express from "express";
 import upload from "../middlewares/upload.js"; // memory storage multer
 import cloudinary from "../config/cloudinary.js";
+import { authenticate, authorizeAdmin } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
@@ -19,7 +20,7 @@ const streamUpload = (buffer, folder = "ecommerce_products") =>
   });
 
 // POST /api/upload (single image)
-router.post("/", upload.single("image"), async (req, res) => {
+router.post("/", authenticate, authorizeAdmin, upload.single("image"), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ message: "No image file provided" });

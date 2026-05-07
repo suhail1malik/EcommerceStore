@@ -6,10 +6,16 @@ const sendEmail = async (options) => {
   const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST || "smtp.mailtrap.io",
     port: process.env.SMTP_PORT || 2525,
+    secure: process.env.SMTP_PORT == 465, // true for 465, false for other ports
     auth: {
       user: process.env.SMTP_EMAIL || "your_mailtrap_user",
       pass: process.env.SMTP_PASSWORD || "your_mailtrap_password",
     },
+    tls: {
+      rejectUnauthorized: false, // Helps with some hosting provider restrictions
+    },
+    connectionTimeout: 10000, // 10 seconds timeout
+    greetingTimeout: 10000,   // 10 seconds timeout
   });
 
   const message = {

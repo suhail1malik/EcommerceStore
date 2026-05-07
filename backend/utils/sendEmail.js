@@ -11,6 +11,7 @@ const sendEmail = async (options) => {
     // If Gmail, port 587 is much more likely to work on Render/AWS than 465
     port: isGmail ? 587 : (process.env.SMTP_PORT || 2525),
     secure: false, // Use false for 587
+    family: 4,     // 👈 FORCE IPv4
     auth: {
       user: process.env.SMTP_EMAIL,
       pass: process.env.SMTP_PASSWORD,

@@ -2,6 +2,10 @@
 import path from "path";
 import express from "express";
 import dotenv from "dotenv";
+import dns from "dns";
+
+// Force IPv4 first to avoid ENETUNREACH errors with Gmail
+dns.setDefaultResultOrder("ipv4first");
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import helmet from "helmet";

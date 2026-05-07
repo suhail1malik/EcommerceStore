@@ -82,7 +82,7 @@ const Favorites = () => {
           </div>
         )}
       </div>
-    </section>
+    </motion.section>
   );
 };
 

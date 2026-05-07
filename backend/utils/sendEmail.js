@@ -8,8 +8,9 @@ const sendEmail = async (options) => {
   const transporter = nodemailer.createTransport({
     service: isGmail ? "gmail" : undefined,
     host: isGmail ? undefined : (process.env.SMTP_HOST || "smtp.mailtrap.io"),
-    port: process.env.SMTP_PORT || 2525,
-    secure: process.env.SMTP_PORT == 465, // true for 465
+    // If Gmail, port 587 is much more likely to work on Render/AWS than 465
+    port: isGmail ? 587 : (process.env.SMTP_PORT || 2525),
+    secure: false, // Use false for 587
     auth: {
       user: process.env.SMTP_EMAIL,
       pass: process.env.SMTP_PASSWORD,

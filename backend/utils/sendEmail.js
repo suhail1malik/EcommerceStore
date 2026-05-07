@@ -3,19 +3,22 @@ import nodemailer from "nodemailer";
 const sendEmail = async (options) => {
   // Setup transporter - replace with real SMTP in production (.env)
   // For development, you can use Mailtrap, SendGrid, or Gmail App Passwords
+  const isGmail = process.env.SMTP_HOST === "smtp.gmail.com";
+
   const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || "smtp.mailtrap.io",
+    service: isGmail ? "gmail" : undefined,
+    host: isGmail ? undefined : (process.env.SMTP_HOST || "smtp.mailtrap.io"),
     port: process.env.SMTP_PORT || 2525,
-    secure: process.env.SMTP_PORT == 465, // true for 465, false for other ports
+    secure: process.env.SMTP_PORT == 465, // true for 465
     auth: {
-      user: process.env.SMTP_EMAIL || "your_mailtrap_user",
-      pass: process.env.SMTP_PASSWORD || "your_mailtrap_password",
+      user: process.env.SMTP_EMAIL,
+      pass: process.env.SMTP_PASSWORD,
     },
     tls: {
-      rejectUnauthorized: false, // Helps with some hosting provider restrictions
+      rejectUnauthorized: false,
     },
-    connectionTimeout: 10000, // 10 seconds timeout
-    greetingTimeout: 10000,   // 10 seconds timeout
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
   });
 
   const message = {

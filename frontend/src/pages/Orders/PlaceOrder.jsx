@@ -12,7 +12,7 @@ import { FaArrowRight, FaCreditCard, FaShippingFast, FaCheckCircle } from "react
 import { motion } from "framer-motion";
 
 import { useCreateOrderMutation } from "../../redux/api/orderApiSlice";
-import { clearCartItems, removeFromCart } from "../../redux/features/cart/cartSlice";
+import { clearCartItems, removeFromCart, clearImmediateCheckout } from "../../redux/features/cart/cartSlice";
 import { BASE_URL } from "../../redux/constants";
 
 // helper: safe currency formatter for INR
@@ -114,7 +114,11 @@ const PlaceOrder = () => {
         dispatch(clearCartItems());
       }
       
-      navigate(`/order/${res._id}`);
+      toast.success("Order placed successfully! Redirecting...");
+      
+      setTimeout(() => {
+        navigate("/my-orders");
+      }, 3000);
     } catch (err) {
       const msg = err?.data?.message || err?.message || "Failed to place order";
       

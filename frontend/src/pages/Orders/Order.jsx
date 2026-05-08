@@ -1,6 +1,6 @@
 // src/pages/order/Order.jsx
 import React from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { generateInvoicePDF } from "../../utils/invoiceGenerator";
@@ -40,6 +40,7 @@ const getImageSource = (imagePath) => {
 
 const Order = () => {
   const { id: orderId } = useParams();
+  const navigate = useNavigate();
   const {
     data: order,
     refetch,
@@ -79,7 +80,11 @@ const Order = () => {
         },
       }).unwrap();
       await refetch();
-      toast.success("Order is paid successfully!");
+      toast.success("Order is paid successfully! Redirecting...");
+      
+      setTimeout(() => {
+        navigate("/my-orders");
+      }, 3000);
     } catch (err) {
       toast.error(
         err?.data?.message || err?.message || "Payment confirmation failed."

@@ -221,7 +221,7 @@ const Order = () => {
                       <div className="flex-grow text-center sm:text-left">
                         <Link
                           to={`/product/${item.product}`}
-                          className="text-lg font-bold text-slate-900 dark:text-white hover:text-emerald-600 transition-colors"
+                          className="text-base font-bold text-slate-900 dark:text-white hover:text-emerald-600 transition-colors"
                         >
                           {item.name}
                         </Link>
@@ -312,7 +312,7 @@ const Order = () => {
         <div className="lg:w-1/3">
           <div className="premium-card rounded-[32px] overflow-hidden sticky top-8 shadow-2xl">
             <div className="px-8 py-6 border-b border-slate-200 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-800/50">
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white italic font-serif">
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white italic font-serif">
                 Fiscal Snapshot
               </h2>
             </div>
@@ -334,8 +334,8 @@ const Order = () => {
 
                 <div className="pt-5 border-t border-slate-100 dark:border-slate-800">
                   <div className="flex justify-between items-center">
-                    <span className="text-lg font-bold text-slate-900 dark:text-white">Total Valuation</span>
-                    <span className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400">
+                    <span className="text-base font-bold text-slate-900 dark:text-white">Total Valuation</span>
+                    <span className="text-xl font-extrabold text-emerald-600 dark:text-emerald-400">
                       {formatCurrency(order?.totalPrice)}
                     </span>
                   </div>

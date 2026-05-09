@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import Chart from "react-apexcharts";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { FaChartBar, FaChartPie, FaChartLine, FaUsers, FaShoppingCart, FaDollarSign } from "react-icons/fa";
+import { FaChartBar, FaChartPie, FaChartLine, FaUsers, FaShoppingCart } from "react-icons/fa";
 
 import { useGetUsersQuery } from "../../redux/api/usersApiSlice";
 import {
@@ -171,7 +171,7 @@ const AdminDashboard = () => {
           <Link to="/admin/orders" className="premium-card group block p-6 rounded-2xl h-full">
             <div className="flex justify-between items-start mb-4">
               <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 text-xl group-hover:scale-110 transition-transform duration-500">
-                <FaDollarSign />
+                <FaChartLine />
               </div>
               <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded">Live</span>
             </div>
@@ -290,20 +290,26 @@ const AdminDashboard = () => {
                         <FaRss className="text-emerald-500/50 animate-pulse" />
                      </div>
                      <div className="space-y-3">
-                        {activities.map(act => (
-                          <motion.div 
-                            key={act.id}
-                            initial={{ x: 20, opacity: 0 }}
-                            animate={{ x: 0, opacity: 1 }}
-                            className="flex items-start gap-3 p-2 rounded-lg bg-white/5 border border-white/5"
-                          >
-                             <div className={`mt-1 w-1.5 h-1.5 rounded-full shrink-0 ${act.type === 'order' ? 'bg-emerald-400' : act.type === 'stock' ? 'bg-rose-400' : 'bg-blue-400'}`} />
-                             <div>
-                                <p className="text-[11px] font-medium text-slate-300 leading-tight">{act.msg}</p>
-                                <p className="text-[9px] text-slate-500 mt-0.5">{act.time}</p>
-                             </div>
-                          </motion.div>
-                        ))}
+                        {activities.length > 0 ? (
+                           activities.map(act => (
+                              <motion.div 
+                                 key={act.id}
+                                 initial={{ x: 20, opacity: 0 }}
+                                 animate={{ x: 0, opacity: 1 }}
+                                 className="flex items-start gap-3 p-2 rounded-lg bg-white/5 border border-white/5"
+                              >
+                                 <div className={`mt-1 w-1.5 h-1.5 rounded-full shrink-0 ${act.type === 'order' ? 'bg-emerald-400' : act.type === 'stock' ? 'bg-rose-400' : 'bg-blue-400'}`} />
+                                 <div>
+                                    <p className="text-[11px] font-medium text-slate-300 leading-tight">{act.msg}</p>
+                                    <p className="text-[9px] text-slate-500 mt-0.5">{act.time}</p>
+                                 </div>
+                              </motion.div>
+                           ))
+                        ) : (
+                           <div className="text-center py-10">
+                              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest animate-pulse">Scanning for platform signals...</p>
+                           </div>
+                        )}
                      </div>
                   </div>
                </div>

@@ -197,7 +197,7 @@ const PlaceOrder = () => {
                         <p className="text-[8px] sm:text-[10px] font-bold uppercase tracking-widest text-emerald-500 mb-0.5">{item.brand}</p>
                         <Link
                           to={`/product/${item.product || item._id}`}
-                          className="text-sm sm:text-lg font-bold text-slate-900 dark:text-white hover:text-emerald-600 transition-colors truncate block pr-8"
+                          className="text-xs sm:text-base font-bold text-slate-900 dark:text-white hover:text-emerald-600 transition-colors truncate block pr-8"
                         >
                           {item.name}
                         </Link>
@@ -274,7 +274,7 @@ const PlaceOrder = () => {
                 animate={{ opacity: 1, x: 0 }}
                 className="premium-card rounded-[24px] sm:rounded-[32px] p-6 sm:p-8 sticky top-24 shadow-2xl border-emerald-500/10"
               >
-                <h2 className="text-xl sm:text-2xl font-bold mb-6 sm:mb-8 text-slate-900 dark:text-white">Fiscal Summary</h2>
+                <h2 className="text-lg sm:text-xl font-bold mb-6 sm:mb-8 text-slate-900 dark:text-white">Fiscal Summary</h2>
                 <div className="space-y-4 sm:space-y-5 mb-8 sm:mb-10 text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-medium">
                   <div className="flex justify-between">
                     <span>Gross Inventory</span>
@@ -290,8 +290,8 @@ const PlaceOrder = () => {
                   </div>
                   <div className="pt-4 sm:pt-5 border-t border-slate-100 dark:border-slate-800">
                     <div className="flex justify-between items-center">
-                      <span className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">Total Valuation</span>
-                      <span className="text-2xl sm:text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 drop-shadow-sm">
+                      <span className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">Total Valuation</span>
+                      <span className="text-xl sm:text-2xl font-extrabold text-emerald-600 dark:text-emerald-400 drop-shadow-sm">
                         {formatINR(totalPrice)}
                       </span>
                     </div>

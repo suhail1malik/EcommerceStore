@@ -50,10 +50,10 @@ const Shipping = () => {
           aria-label="Shipping form"
         >
           <div className="mb-8 sm:mb-10 text-center sm:text-left">
-            <h1 className="text-2xl sm:text-4xl font-extrabold text-gray-900 dark:text-white mb-2 italic font-serif">
+            <h1 className="text-lg sm:text-2xl font-extrabold text-gray-900 dark:text-white mb-2 italic font-serif">
               Shipping Destination
             </h1>
-            <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 font-medium">Where should we deliver your luxury pieces?</p>
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">Where should we deliver your luxury pieces?</p>
           </div>
 
           <div className="space-y-6 sm:space-y-8">
@@ -142,7 +142,7 @@ const Shipping = () => {
 
           <button
             type="submit"
-            className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-4 sm:py-5 px-4 rounded-xl sm:rounded-2xl text-base sm:text-lg mt-8 sm:mt-12 font-bold uppercase tracking-widest transition-all shadow-xl shadow-emerald-600/20 active:scale-[0.98] flex items-center justify-center gap-3"
+            className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-4 sm:py-5 px-4 rounded-xl sm:rounded-2xl text-sm sm:text-base mt-8 sm:mt-12 font-bold uppercase tracking-widest transition-all shadow-xl shadow-emerald-600/20 active:scale-[0.98] flex items-center justify-center gap-3"
             aria-label="Continue to payment"
           >
             Continue <FaArrowRight className="text-sm" />

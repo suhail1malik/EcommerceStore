@@ -82,47 +82,49 @@ const ProductCard = ({ product }) => {
       </div>
 
       {/* Product Details */}
-      <div className="p-5 sm:p-6 flex flex-col flex-1 gap-2">
-        <div className="flex justify-between items-start gap-2">
+      <div className="p-3 sm:p-4 flex flex-col flex-1 gap-1.5">
+        <div className="flex justify-between items-start gap-1">
           <Link 
             to={`/product/${product._id}`}
-            className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 line-clamp-1 hover:text-emerald-500 transition-colors duration-300"
+            className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100 line-clamp-2 hover:text-emerald-500 transition-colors duration-300 min-h-[2.5rem] leading-snug"
           >
             {product.name}
           </Link>
         </div>
         
-        <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">
+        <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400 dark:text-slate-500">
           {product.brand}
         </p>
-
-        {product.numReviews > 0 && (
-          <div className="flex items-center gap-2 mb-1">
-            <Ratings value={product.rating} text={""} color="#f59e0b" />
-            <span className="text-[10px] font-black text-slate-400 tracking-tighter">({product.numReviews} REVIEWS)</span>
-          </div>
-        )}
-
-        <div className="mt-auto pt-4 flex items-center justify-between border-t border-slate-50 dark:border-slate-800/40">
-           <div className="flex items-center gap-3">
-              <p className="text-xl font-black text-slate-950 dark:text-white tracking-tighter">
-                {product.price?.toLocaleString('en-IN', {
-                  style: 'currency',
-                  currency: 'INR',
-                  maximumFractionDigits: 0
-                })}
-              </p>
-              {product.originalPrice > product.price && (
-                <span className="text-[13px] font-bold text-slate-400 line-through opacity-60">₹{product.originalPrice}</span>
-              )}
-           </div>
-           
-           {product.countInStock <= 0 && (
-             <div className="flex gap-1.5 items-center bg-red-50 dark:bg-red-500/10 px-2.5 py-1 rounded-full border border-red-100 dark:border-red-500/20">
-                <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                <span className="text-[9px] font-black uppercase tracking-tight text-red-500">Sold Out</span>
+        
+        <div className="flex flex-col gap-1.5 mt-auto pt-2 border-t border-slate-50 dark:border-slate-800/40">
+           {product.numReviews > 0 && (
+             <div className="flex items-center gap-1.5">
+               <Ratings value={product.rating} text={""} color="#f59e0b" />
+               <span className="text-[9px] font-bold text-slate-400 tracking-tighter">({product.numReviews})</span>
              </div>
            )}
+
+           <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                 <p className="text-base sm:text-lg font-black text-slate-950 dark:text-white tracking-tighter">
+                   {product.price?.toLocaleString('en-IN', {
+                     style: 'currency',
+                     currency: 'INR',
+                     maximumFractionDigits: 0
+                   })}
+                 </p>
+                 {product.originalPrice > product.price && (
+                   <span className="text-[11px] font-bold text-slate-400 line-through opacity-60">₹{product.originalPrice}</span>
+                 )}
+              </div>
+              
+              {product.countInStock <= 0 && (
+                <div className="flex gap-1 items-center bg-red-50 dark:bg-red-500/10 px-1.5 py-0.5 rounded-full border border-red-100 dark:border-red-500/20">
+                   <div className="w-1 h-1 rounded-full bg-red-500 animate-pulse" />
+                   <span className="text-[8px] font-black uppercase tracking-tight text-red-500">Sold Out</span>
+                </div>
+              )}
+           </div>
         </div>
       </div>
 

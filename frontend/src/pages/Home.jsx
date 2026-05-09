@@ -39,16 +39,16 @@ const Home = () => {
         
         {/* Top Rated Strip - Requested above CTA */}
         {!keyword && topProducts && topProducts.length > 0 && (
-          <div className="py-12 border-b border-slate-100 dark:border-slate-800/50 mb-12">
-            <div className="flex items-center justify-between mb-8">
+          <div className="py-10 border-b border-slate-100 dark:border-slate-800/50 mb-10">
+            <div className="flex items-center justify-between mb-6">
               <div className="space-y-1">
                 <span className="text-[10px] font-black uppercase tracking-[0.3em] text-amber-500">Curated Excellence</span>
-                <h3 className="text-2xl font-bold text-slate-900 dark:text-white">Top Rated Selection</h3>
+                <h3 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">Top Rated Selection</h3>
               </div>
               <button onClick={() => navigate("/shop")} className="text-xs font-black uppercase tracking-widest text-slate-400 hover:text-indigo-500 transition-colors">View All</button>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
-              {topProducts.slice(0, 4).map(product => (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-5">
+              {topProducts.slice(0, 5).map(product => (
                 <ProductCard key={product._id} product={product} />
               ))}
             </div>
@@ -57,11 +57,11 @@ const Home = () => {
 
         {/* Dynamic Promo Banner */}
         {!keyword && (
-          <div className="mb-16 reveal" style={{ animationDelay: '200ms' }}>
+          <div className="mb-12 reveal" style={{ animationDelay: '200ms' }}>
             <PromoBanner 
               badge="Exclusive Offer"
               title="THE LUXURY FLASH SALE"
-              subtitle="Elevate your lifestyle with our most exclusive collection. Limited quantities available for the next 24 hours."
+              subtitle="Elevate your lifestyle with our most exclusive collection."
               primaryBtnText="Explore Deals"
               secondaryBtnText="View Catalog"
             />
@@ -72,13 +72,13 @@ const Home = () => {
         {!keyword && <FeaturesSection />}
 
         {/* Products Grid Section */}
-        <div className="py-12 sm:py-20">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
-            <div className="space-y-2">
+        <div className="py-8 sm:py-16">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+            <div className="space-y-1">
               <span className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-500">
                 {keyword ? `Search results for "${keyword}"` : "Our Collections"}
               </span>
-              <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
+              <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
                 {keyword ? "Discovery" : "Featured Products"}
               </h2>
             </div>
@@ -86,7 +86,7 @@ const Home = () => {
           </div>
 
           {isLoading ? (
-             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
+             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-5">
                 {[...Array(12)].map((_, i) => <SkeletonProductCard key={i} />)}
              </div>
           ) : isError ? (
@@ -98,7 +98,7 @@ const Home = () => {
           ) : (
             <>
               {data?.products?.length > 0 ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-5">
                   {data.products.map((product) => (
                     <ProductCard key={product._id} product={product} />
                   ))}

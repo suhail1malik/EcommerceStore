@@ -192,12 +192,12 @@ const ProductDetails = () => {
             <div className="mb-4 flex flex-wrap items-end gap-4">
               <div className="flex flex-col">
                 <div className="flex items-center gap-3">
-                  <span className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white">
+                  <span className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 dark:text-white">
                     ₹{product.price?.toLocaleString("en-IN")}
                   </span>
                   {product.originalPrice > product.price && (
                     <div className="flex flex-col">
-                      <span className="text-lg sm:text-xl text-slate-400 line-through font-medium">
+                      <span className="text-base sm:text-lg text-slate-400 line-through font-medium">
                         ₹{product.originalPrice?.toLocaleString("en-IN")}
                       </span>
                       <span className="text-emerald-500 text-xs font-black uppercase tracking-widest">
@@ -229,7 +229,7 @@ const ProductDetails = () => {
             </div>
 
             {/* 2. Product Name */}
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-800 dark:text-slate-100 tracking-tight mb-3">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-800 dark:text-slate-100 tracking-tight mb-3">
               {product.name}
             </h1>
 
@@ -310,7 +310,7 @@ const ProductDetails = () => {
             </div>
 
             {/* Description */}
-            <div className="mt-6 mb-8 text-sm sm:text-base text-slate-600 dark:text-slate-400 leading-relaxed font-normal opacity-90 max-w-[800px]">
+            <div className="mt-6 mb-8 text-[13px] sm:text-[15px] text-slate-600 dark:text-slate-400 leading-relaxed font-normal opacity-90 max-w-[800px]">
               <p className={`overflow-hidden transition-all duration-300 ${isExpandedDesc ? '' : 'line-clamp-3'}`}>
                 {product.description}
               </p>

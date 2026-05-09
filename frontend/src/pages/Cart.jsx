@@ -38,7 +38,7 @@ const Cart = () => {
       className="w-full px-4 sm:px-6 lg:px-12 py-10 min-h-[70vh]"
     >
       <div className="max-w-[1400px] mx-auto">
-        <h1 className="text-3xl lg:text-5xl font-extrabold mb-2 font-serif tracking-tight text-gray-900 dark:text-slate-100" style={{ fontFamily: "'Playfair Display', serif" }}>
+        <h1 className="text-2xl lg:text-4xl font-extrabold mb-2 font-serif tracking-tight text-gray-900 dark:text-slate-100" style={{ fontFamily: "'Playfair Display', serif" }}>
           Your Shopping Bag
         </h1>
         <p className="text-slate-500 mb-10 pb-4 border-b border-gray-200 dark:border-slate-800">
@@ -94,12 +94,12 @@ const Cart = () => {
                           </p>
                           <Link
                             to={`/product/${item._id}`}
-                            className="text-xl font-bold text-slate-900 dark:text-slate-100 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors line-clamp-2"
+                            className="text-lg font-bold text-slate-900 dark:text-slate-100 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors line-clamp-2"
                           >
                             {item.name}
                           </Link>
                         </div>
-                        <p className="text-xl font-extrabold text-slate-900 dark:text-slate-100 shrink-0">
+                        <p className="text-lg font-extrabold text-slate-900 dark:text-slate-100 shrink-0">
                           ₹{item.price.toLocaleString("en-IN")}
                         </p>
                       </div>
@@ -164,8 +164,8 @@ const Cart = () => {
                   </div>
                   <hr className="border-slate-200 dark:border-slate-700 my-4" />
                   <div className="flex justify-between items-center">
-                    <span className="text-lg font-bold text-gray-900 dark:text-slate-100">Total</span>
-                    <span className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-500">
+                    <span className="text-base font-bold text-gray-900 dark:text-slate-100">Total</span>
+                    <span className="text-xl font-extrabold text-emerald-600 dark:text-emerald-500">
                       ₹{totalPrice.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
                     </span>
                   </div>
